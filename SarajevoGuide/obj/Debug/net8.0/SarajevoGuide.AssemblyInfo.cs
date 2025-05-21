@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SarajevoGuide")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+28b9cbf7603847fa46d3491ae6ffacdd59ac4c41")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+723f824ac0192092ae09948719e85070ba9561cf")]
 [assembly: System.Reflection.AssemblyProductAttribute("SarajevoGuide")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SarajevoGuide")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

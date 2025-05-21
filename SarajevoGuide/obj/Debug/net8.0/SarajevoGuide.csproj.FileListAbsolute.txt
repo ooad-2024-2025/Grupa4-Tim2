@@ -140,3 +140,15 @@ C:\Users\Korisnik\Desktop\OOAD\SarajevoGuide\obj\Debug\net8.0\refint\SarajevoGui
 C:\Users\Korisnik\Desktop\OOAD\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.pdb
 C:\Users\Korisnik\Desktop\OOAD\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.genruntimeconfig.cache
 C:\Users\Korisnik\Desktop\OOAD\SarajevoGuide\obj\Debug\net8.0\ref\SarajevoGuide.dll
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.csproj.AssemblyReference.cache
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.AssemblyInfoInputs.cache
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.AssemblyInfo.cs
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.csproj.CoreCompileInputs.cache
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.RazorAssemblyInfo.cache
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.RazorAssemblyInfo.cs
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.sourcelink.json
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.dll
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\refint\SarajevoGuide.dll
+C:\Users\Korisnik\Documents\GitHub\Grupa4-Tim2\SarajevoGuide\obj\Debug\net8.0\SarajevoGuide.pdb
