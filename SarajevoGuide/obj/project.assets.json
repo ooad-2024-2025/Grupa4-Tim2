@@ -4195,11 +4195,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Korisnik\\Desktop\\OOAD\\SarajevoGuide\\SarajevoGuide.csproj",
+      "projectUniqueName": "C:\\Users\\Korisnik\\source\\repos\\ooad-2024-2025\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
       "projectName": "SarajevoGuide",
-      "projectPath": "C:\\Users\\Korisnik\\Desktop\\OOAD\\SarajevoGuide\\SarajevoGuide.csproj",
+      "projectPath": "C:\\Users\\Korisnik\\source\\repos\\ooad-2024-2025\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
       "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Korisnik\\Desktop\\OOAD\\SarajevoGuide\\obj\\",
+      "outputPath": "C:\\Users\\Korisnik\\source\\repos\\ooad-2024-2025\\Grupa4-Tim2\\SarajevoGuide\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
