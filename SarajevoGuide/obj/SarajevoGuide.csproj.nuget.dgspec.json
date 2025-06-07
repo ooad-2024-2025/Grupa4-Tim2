@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Student\\Source\\Repos\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj": {}
+    "C:\\Users\\Korisnik\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Student\\Source\\Repos\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj": {
+    "C:\\Users\\Korisnik\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Student\\Source\\Repos\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
+        "projectUniqueName": "C:\\Users\\Korisnik\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
         "projectName": "SarajevoGuide",
-        "projectPath": "C:\\Users\\Student\\Source\\Repos\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
-        "packagesPath": "C:\\Users\\Student\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Student\\Source\\Repos\\Grupa4-Tim2\\SarajevoGuide\\obj\\",
+        "projectPath": "C:\\Users\\Korisnik\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
+        "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Korisnik\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Student\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Korisnik\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -40,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -58,7 +62,11 @@
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.11, )"
+            },
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[8.0.7, )"
             }
           },
           "imports": [
@@ -80,7 +88,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
