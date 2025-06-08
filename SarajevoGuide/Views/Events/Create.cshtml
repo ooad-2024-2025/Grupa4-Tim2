@@ -6,46 +6,67 @@
 
 <h1>Create</h1>
 
-<h4>Event</h4>
 <hr />
+
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Time" class="control-label"></label>
-                <input asp-for="Time" class="form-control" />
-                <span asp-validation-for="Time" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="col-md-8 offset-md-2">
+
+        <div class="card shadow p-4 mb-5 bg-white rounded">
+            <h4 class="mb-4">Event</h4>
+
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div id="dateFields">
+                    <div class="form-group">
+                        <label asp-for="StartDate" class="control-label"></label>
+                        <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="EndDate" class="control-label"></label>
+                        <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Lat" class="control-label"></label>
+                    <input asp-for="Lat" class="form-control" />
+                    <span asp-validation-for="Lat" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Lng" class="control-label"></label>
+                    <input asp-for="Lng" class="form-control" />
+                    <span asp-validation-for="Lng" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Kategorija" class="control-label"></label>
+                    <select asp-for="Kategorija" class="form-control" asp-items="Html.GetEnumSelectList<SarajevoGuide.Enums.Kategorija>()"></select>
+                    <span asp-validation-for="Kategorija" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+
     </div>
 </div>
 
@@ -54,5 +75,25 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function toggleDateFields() {
+            var selectedCategory = document.getElementById("Kategorija").value;
+            var dateFields = document.getElementById("dateFields");
+
+            if (selectedCategory === "0" || selectedCategory === "1") {
+                dateFields.style.display = "none";
+            } else {
+                dateFields.style.display = "block";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            toggleDateFields();
+            document.getElementById("Kategorija").addEventListener("change", toggleDateFields);
+        });
+    </script>
 }

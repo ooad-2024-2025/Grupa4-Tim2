@@ -6,15 +6,15 @@
     <div class="sidebar">
         <p class="section-title">CATEGORY</p>
         <div class="btn-group-vertical w-100 mb-3">
-            <button class="category-btn active">
+            <button class="category-btn active" data-category="Sight" onclick="filterMarkers('Sight')">
                 <img src="/images/camera.png" alt="Sights" />
                 <span>Sights</span>
             </button>
-            <button class="category-btn">
+            <button class="category-btn" data-category="Event" onclick="filterMarkers('Event')">
                 <img src="/images/event.png" alt="Events" />
                 <span>Events</span>
             </button>
-            <button class="category-btn">
+            <button class="category-btn" data-category="Rest" onclick="filterMarkers('Rest')">
                 <img src="/images/coffee.png" alt="Rest" />
                 <span>Rest</span>
             </button>
@@ -47,7 +47,6 @@
             <div class="distance-labels"><span>0 m</span><span>10 km</span></div>
         </div>
     </div>
-
     <div id="map"></div>
 </div>
 
@@ -55,32 +54,73 @@
 @section Scripts {
     <script>
         let map;
+        let markers = [];
+        let currentCategory = null;
 
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
 
             map = new Map(document.getElementById('map'), {
-                center: { lat: 43.8563, lng: 18.4131 }, // Sarajevo
+                center: { lat: 43.8563, lng: 18.4131 },
                 zoom: 13,
             });
 
-            new google.maps.Marker({
-                position: { lat: 43.8563, lng: 18.4131 },
-                map,
-                title: "Skenderija"
-            });
+            const response = await fetch('/Events/GetEvents');
+            const events = await response.json();
 
-            new google.maps.Marker({
-                position: { lat: 43.8600, lng: 18.3986 },
-                map,
-                title: "Marijin Dvor"
+            events.forEach(event => {
+                const marker = new google.maps.Marker({
+                    position: { lat: event.lat, lng: event.lng },
+                    map: map,
+                    title: event.name
+                });
+
+                // Save kategorija to marker object
+                marker.kategorija = event.kategorija;
+
+                markers.push(marker); // <-- VERY IMPORTANT
             });
         }
 
-        // 👇 VERY IMPORTANT
+                           function filterMarkers(category) {
+            const allButtons = document.querySelectorAll('.category-btn');
+
+            // If the clicked category is already active — reset
+            if (currentCategory === category) {
+                currentCategory = null;
+
+                // Remove active from all buttons
+                allButtons.forEach(btn => btn.classList.remove('active'));
+
+                // Show all markers
+                markers.forEach(marker => marker.setMap(map));
+            } else {
+                currentCategory = category;
+
+                // Remove active from all buttons
+                allButtons.forEach(btn => btn.classList.remove('active'));
+
+                // Activate the clicked button
+                allButtons.forEach(btn => {
+                    if (btn.dataset.category === category) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                // Filter markers
+                markers.forEach(marker => {
+                    if (marker.kategorija === category) {
+                        marker.setMap(map); // Show matching
+                    } else {
+                        marker.setMap(null); // Hide others
+                    }
+                });
+            }
+        }
+
+
         window.initMap = initMap;
     </script>
-
 
     <!-- 👇 Load Google Maps API -->
     <script async defer

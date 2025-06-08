@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SarajevoGuide.Data;
 using SarajevoGuide.Models;
@@ -50,11 +49,9 @@ namespace SarajevoGuide.Controllers
         }
 
         // POST: Events/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,StartDate,EndDate,Location,Time")] Event @event)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,StartDate,EndDate,Lat,Lng,Kategorija")] Event @event)
         {
             if (ModelState.IsValid)
             {
@@ -82,11 +79,9 @@ namespace SarajevoGuide.Controllers
         }
 
         // POST: Events/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,Location,Time")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,Lat,Lng,Kategorija")] Event @event)
         {
             if (id != @event.Id)
             {
@@ -134,6 +129,20 @@ namespace SarajevoGuide.Controllers
             return View(@event);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetEvents()
+        {
+            var events = await _context.Event
+                .Select(e => new {
+                    e.Name,
+                    e.Lat,
+                    e.Lng,
+                    kategorija = e.Kategorija.ToString() // We'll use this later for different marker colors
+                })
+                .ToListAsync();
+
+            return Json(events);
+        }
         // POST: Events/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
