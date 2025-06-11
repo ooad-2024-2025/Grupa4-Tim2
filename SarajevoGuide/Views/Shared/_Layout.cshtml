@@ -19,32 +19,55 @@
                 </a>
             </div>
             <div class="navbar-links">
-                <a href="/" class="active">Home</a>
+                <a href="/">Home</a>
                 <a href="/Bookmarks">Bookmarks</a>
-                <a href="/Admin">Admin</a>
+                <a href="/Events">Admin</a>
             </div>
             <div class="navbar-account">
-                <a href="/Account">Account</a>
+                <a href="/RegistrovaniKorisniks">Account</a>
                 <img src="images/user.png" alt="account" />
             </div>
         </nav>
     </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - SarajevoGuide - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the current page URL
+            const currentPath = window.location.pathname.toLowerCase();
+
+            // Get all navbar links (correct selector)
+            const navbarLinks = document.querySelectorAll('.navbar-links a');
+
+            // Remove active class from all links first
+            navbarLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Add active class based on current path
+            navbarLinks.forEach(link => {
+                const href = link.getAttribute('href').toLowerCase();
+
+                // Check if current path matches or starts with the link href
+                if (currentPath === href ||
+                    (href !== '/' && currentPath.startsWith(href)) ||
+                    (href.includes('events') && currentPath.includes('events')) ||
+                    (href === '/' && currentPath === '/')) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

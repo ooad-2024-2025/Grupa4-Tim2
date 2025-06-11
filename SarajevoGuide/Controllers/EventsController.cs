@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SarajevoGuide.Data;
 using SarajevoGuide.Models;
+using SarajevoGuide.Enums;
 
 namespace SarajevoGuide.Controllers
 {
@@ -18,9 +20,28 @@ namespace SarajevoGuide.Controllers
             _context = context;
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> GetEvents()
+        {
+            var events = await _context.Event.Select(e => new
+            {
+                e.Id,
+                name = e.Name,
+                lat = e.Lat,
+                lng = e.Lng,
+                kategorija = e.Kategorija.ToString()
+            }).ToListAsync();
+
+            return Json(events);
+        }
+
+
         // GET: Events
         public async Task<IActionResult> Index()
         {
+            // Populate dropdown data for the modal
+            PopulateKategorijaDropdown();
             return View(await _context.Event.ToListAsync());
         }
 
@@ -45,20 +66,40 @@ namespace SarajevoGuide.Controllers
         // GET: Events/Create
         public IActionResult Create()
         {
+            PopulateKategorijaDropdown();
             return View();
         }
 
         // POST: Events/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,StartDate,EndDate,Lat,Lng,Kategorija")] Event @event)
+        public async Task<IActionResult> Create([Bind("Id,Name,Kategorija,Description,StartDate,EndDate,Lat,Lng,Price")] Event @event)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(@event);
                 await _context.SaveChangesAsync();
+
+                // Check if the request is from the modal (AJAX)
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = "Event created successfully!" });
+                }
+
                 return RedirectToAction(nameof(Index));
             }
+
+            // If validation failed and it's an AJAX request
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                    .ToArray();
+                return Json(new { success = false, errors = errors });
+            }
+
+            PopulateKategorijaDropdown(@event.Kategorija);
             return View(@event);
         }
 
@@ -75,13 +116,14 @@ namespace SarajevoGuide.Controllers
             {
                 return NotFound();
             }
+            PopulateKategorijaDropdown(@event.Kategorija);
             return View(@event);
         }
 
         // POST: Events/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,Lat,Lng,Kategorija")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Kategorija,Description,StartDate,EndDate,Lat,Lng,Price")] Event @event)
         {
             if (id != @event.Id)
             {
@@ -108,6 +150,7 @@ namespace SarajevoGuide.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            PopulateKategorijaDropdown(@event.Kategorija);
             return View(@event);
         }
 
@@ -129,20 +172,6 @@ namespace SarajevoGuide.Controllers
             return View(@event);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetEvents()
-        {
-            var events = await _context.Event
-                .Select(e => new {
-                    e.Name,
-                    e.Lat,
-                    e.Lng,
-                    kategorija = e.Kategorija.ToString() // We'll use this later for different marker colors
-                })
-                .ToListAsync();
-
-            return Json(events);
-        }
         // POST: Events/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -161,6 +190,13 @@ namespace SarajevoGuide.Controllers
         private bool EventExists(int id)
         {
             return _context.Event.Any(e => e.Id == id);
+        }
+
+        private void PopulateKategorijaDropdown(object selectedKategorija = null)
+        {
+            var kategorijaList = from Kategorija k in Enum.GetValues(typeof(Kategorija))
+                                 select new { Value = (int)k, Text = k.ToString() };
+            ViewBag.Kategorija = new SelectList(kategorijaList, "Value", "Text", selectedKategorija);
         }
     }
 }
