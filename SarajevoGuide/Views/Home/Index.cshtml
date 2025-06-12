@@ -47,10 +47,9 @@
             <div class="distance-labels"><span>0 m</span><span>10 km</span></div>
         </div>
     </div>
+
     <div id="map"></div>
 </div>
-
-
 @section Scripts {
     <script>
         let map;
@@ -65,6 +64,8 @@
                 zoom: 13,
             });
 
+            const infoWindow = new google.maps.InfoWindow(); // ✅ FIX: define before usage
+
             const response = await fetch('/Events/GetEvents');
             const events = await response.json();
 
@@ -75,49 +76,42 @@
                     title: event.name
                 });
 
-                // Save kategorija to marker object
                 marker.kategorija = event.kategorija;
 
-                markers.push(marker); // <-- VERY IMPORTANT
+                const infoHtml = `
+                    <div>
+                        <strong>${event.name}</strong><br>
+                        <span>Category: ${event.kategorija}</span>
+                    </div>
+                `;
+
+                marker.addListener("click", () => {
+                    infoWindow.setContent(infoHtml);
+                    infoWindow.open(map, marker);
+                });
+
+                markers.push(marker);
             });
         }
 
-                           function filterMarkers(category) {
+        function filterMarkers(category) {
             const allButtons = document.querySelectorAll('.category-btn');
 
-            // If the clicked category is already active — reset
             if (currentCategory === category) {
                 currentCategory = null;
-
-                // Remove active from all buttons
                 allButtons.forEach(btn => btn.classList.remove('active'));
-
-                // Show all markers
                 markers.forEach(marker => marker.setMap(map));
             } else {
                 currentCategory = category;
-
-                // Remove active from all buttons
-                allButtons.forEach(btn => btn.classList.remove('active'));
-
-                // Activate the clicked button
                 allButtons.forEach(btn => {
-                    if (btn.dataset.category === category) {
-                        btn.classList.add('active');
-                    }
+                    btn.classList.remove('active');
+                    if (btn.dataset.category === category) btn.classList.add('active');
                 });
-
-                // Filter markers
                 markers.forEach(marker => {
-                    if (marker.kategorija === category) {
-                        marker.setMap(map); // Show matching
-                    } else {
-                        marker.setMap(null); // Hide others
-                    }
+                    marker.setMap(marker.kategorija === category ? map : null);
                 });
             }
         }
-
 
         window.initMap = initMap;
     </script>
