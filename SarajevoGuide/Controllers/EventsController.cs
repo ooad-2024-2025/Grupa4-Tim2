@@ -38,12 +38,18 @@ namespace SarajevoGuide.Controllers
 
 
         // GET: Events
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string category)
         {
-            // Populate dropdown data for the modal
-            PopulateKategorijaDropdown();
-            return View(await _context.Event.ToListAsync());
+            var events = _context.Event.AsQueryable();
+
+            if (!string.IsNullOrEmpty(category) && Enum.TryParse(category, out Kategorija parsedCategory))
+            {
+                events = events.Where(e => e.Kategorija == parsedCategory);
+            }
+
+            return View(await events.ToListAsync());
         }
+
 
         // GET: Events/Details/5
         public async Task<IActionResult> Details(int? id)

@@ -1,2 +1,4 @@
 .vs/ 
 Sarajevo/.vs/ 
+bin/
+obj/

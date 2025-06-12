@@ -69,7 +69,7 @@
                 zoom: 13,
             });
 
-            const infoWindow = new google.maps.InfoWindow(); // ✅ FIX: define before usage
+            const infoWindow = new google.maps.InfoWindow();
 
             const response = await fetch('/Events/GetEvents');
             allEvents = await response.json();
@@ -83,10 +83,14 @@
 
                 marker.kategorija = event.kategorija;
 
+                // Generate a random image URL using picsum.photos
+                const randomImgUrl = `https://picsum.photos/seed/${Math.floor(Math.random() * 1000)}/200/120`;
+
                 const infoHtml = `
-                    <div>
+                    <div style="max-width: 220px;">
                         <strong>${event.name}</strong><br>
-                        <span>Category: ${event.kategorija}</span>
+                        <span>Category: ${event.kategorija}</span><br>
+                        <img src="${randomImgUrl}" alt="random image" style="width: 100%; height: auto; margin-top: 8px; border-radius: 6px;" />
                     </div>
                 `;
 
@@ -153,7 +157,6 @@
 
         window.initMap = initMap;
     </script>
-
     <!--  Load Google Maps API -->
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFJUeEaeMvw0dht4bnVPCb799EFW-8-Ao&callback=initMap">
