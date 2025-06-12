@@ -6,7 +6,7 @@
     <div class="sidebar">
         <p class="section-title">CATEGORY</p>
         <div class="btn-group-vertical w-100 mb-3">
-            <button class="category-btn active" data-category="Sight" onclick="filterMarkers('Sight')">
+            <button class="category-btn" data-category="Sight" onclick="filterMarkers('Sight')">
                 <img src="/images/camera.png" alt="Sights" />
                 <span>Sights</span>
             </button>
@@ -48,13 +48,18 @@
         </div>
     </div>
 
-    <div id="map"></div>
+    <div class="map-and-cards" style="display: flex; flex-grow: 1;">
+        <div id="eventCards" class="event-cards" style="display: none; width: 40%; padding-right: 16px;"></div>
+        <div id="map" style="width: 60%; height: 600px;"></div>
+    </div>
+
 </div>
 @section Scripts {
     <script>
         let map;
         let markers = [];
         let currentCategory = null;
+        let allEvents = [];
 
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
@@ -67,12 +72,12 @@
             const infoWindow = new google.maps.InfoWindow(); // ✅ FIX: define before usage
 
             const response = await fetch('/Events/GetEvents');
-            const events = await response.json();
+            allEvents = await response.json();
 
-            events.forEach(event => {
+            allEvents.forEach(event => {
                 const marker = new google.maps.Marker({
                     position: { lat: event.lat, lng: event.lng },
-                    map: map,
+                    map: null,
                     title: event.name
                 });
 
@@ -94,13 +99,43 @@
             });
         }
 
+        function renderCards(category) {
+            const container = document.getElementById("eventCards");
+            container.innerHTML = "";
+
+            const filteredEvents = allEvents.filter(e => e.kategorija === category);
+
+            filteredEvents.forEach(e => {
+                container.innerHTML += `
+                    <div class="event-card mb-4">
+                        <div class="card-image-placeholder">
+                            <svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="#bbb" /></svg>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${e.name}</h3>
+                            <p class="card-subtitle">${e.kategorija}</p>
+                            <div class="card-rating">
+                                <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                                <span class="star">☆</span><span class="star">☆</span>
+                                <span class="rating-text">3.0</span>
+                            </div>
+                            <button class="card-edit-btn">Detalji</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+
         function filterMarkers(category) {
             const allButtons = document.querySelectorAll('.category-btn');
+            const container = document.getElementById("eventCards");
 
             if (currentCategory === category) {
                 currentCategory = null;
                 allButtons.forEach(btn => btn.classList.remove('active'));
-                markers.forEach(marker => marker.setMap(map));
+                markers.forEach(marker => marker.setMap(null));
+                container.style.display = "none";
             } else {
                 currentCategory = category;
                 allButtons.forEach(btn => {
@@ -109,7 +144,10 @@
                 });
                 markers.forEach(marker => {
                     marker.setMap(marker.kategorija === category ? map : null);
+
                 });
+                container.style.display = "block";
+                renderCards(category);
             }
         }
 

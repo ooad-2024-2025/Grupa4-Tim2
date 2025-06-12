@@ -7731,23 +7731,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\fifi\\.nuget\\packages\\": {},
+    "C:\\Users\\Korisnik\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\fifi\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
+      "projectUniqueName": "C:\\Users\\Korisnik\\ooad\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
       "projectName": "SarajevoGuide",
-      "projectPath": "C:\\Users\\fifi\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
-      "packagesPath": "C:\\Users\\fifi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\fifi\\Documents\\GitHub\\Grupa4-Tim2\\SarajevoGuide\\obj\\",
+      "projectPath": "C:\\Users\\Korisnik\\ooad\\Grupa4-Tim2\\SarajevoGuide\\SarajevoGuide.csproj",
+      "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Korisnik\\ooad\\Grupa4-Tim2\\SarajevoGuide\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\fifi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Korisnik\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -7774,7 +7774,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -7810,12 +7810,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.Net.Sdk.Compilers.Toolset",
-            "version": "[9.0.300, 9.0.300]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -7824,7 +7818,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
