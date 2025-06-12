@@ -1,0 +1,32 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Explore Sarajevo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+</head>
+<body>
+<div class="login-modal-backdrop" id="loginModal" style="display:none;">
+    <div class="login-modal">
+        <button class="login-modal-close" type="button" aria-label="Close" onclick="hideLoginModal()">&times;</button>
+        <div class="login-modal-title">
+            Enter your email and password to log in
+        </div>
+        <form asp-area="Identity" asp-page="/RegistrovaniKorisnik/Login" method="post" autocomplete="off">
+            <input type="hidden" name="ReturnUrl" value="/Home/Index" />
+            <div class="login-form-group">
+                <label for="Input_Email" class="login-form-label">Email</label>
+                <input id="Input_Email" name="Input.Email" class="login-form-input" autocomplete="username" type="email" required />
+            </div>
+            <div class="login-form-group">
+                <label for="Input_Password" class="login-form-label">Password</label>
+                <input id="Input_Password" name="Input.Password" class="login-form-input" type="password" autocomplete="current-password" required />
+            </div>
+            <button type="submit" class="login-modal-btn">Log In</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

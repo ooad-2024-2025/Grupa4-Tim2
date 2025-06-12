@@ -145,6 +145,7 @@ html, body {
     transition: background-color 0.3s, color 0.3s;
     font-size: 16px;
     min-width: 200px;
+    text-decoration: none;
 }
 
 .category-btn-admin {
@@ -701,3 +702,5 @@ input[type="range"] {
         padding: 20px;
     }
 }
+
+

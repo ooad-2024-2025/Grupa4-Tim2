@@ -1,59 +1,41 @@
 ﻿@model IEnumerable<SarajevoGuide.Models.RegistrovaniKorisnik>
-
 @{
-    ViewData["Title"] = "Index";
+    Layout = null;
 }
 
-<h1>Index</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Explore Sarajevo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-image"></div>
+        <div class="auth-content">
+            <button class="auth-close" onclick="window.location.href='/'" aria-label="Close">&times;</button>
+            <div class="auth-dot"></div>
+            <h1 class="auth-title">Explore Sarajevo</h1>
+            <p class="auth-subtitle">Join us today</p>
+            <button class="auth-btn primary">Sign up with email</button>
+            <p class="auth-terms">
+                By signing up, you agree to the
+                <a href="#">Terms of Service</a> and
+                <a href="#">Privacy Policy</a>, including <a href="#">cookie use</a>.
+            </p>
+            <p class="auth-small-text">Already have an account?</p>
+            <button class="auth-btn secondary">Log in</button>
+            <p class="auth-skip" onclick="window.location.href='/'">Or skip for now and explore our website…</p>
+        </div>
+    </div>
+</body>
+</html>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.prezime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.lozinka)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.username)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.prezime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.lozinka)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.username)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.body.classList.add("fade-in");
+    });
+</script>
+
