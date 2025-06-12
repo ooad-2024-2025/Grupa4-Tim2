@@ -28,6 +28,7 @@ namespace SarajevoGuide.Controllers
             {
                 e.Id,
                 name = e.Name,
+                description=e.Description,
                 lat = e.Lat,
                 lng = e.Lng,
                 kategorija = e.Kategorija.ToString()

@@ -60,6 +60,7 @@
         let markers = [];
         let currentCategory = null;
         let allEvents = [];
+        const bookmarkedIds = new Set();
 
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
@@ -103,6 +104,19 @@
             });
         }
 
+        function toggleBookmark(eventId) {
+            const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
+            if (bookmarkedIds.has(eventId)) {
+                bookmarkedIds.delete(eventId);
+                icon.classList.remove('active');
+                icon.textContent = '♡';
+            } else {
+                bookmarkedIds.add(eventId);
+                icon.classList.add('active');
+                icon.textContent = '♥';
+            }
+        }
+
         function renderCards(category) {
             const container = document.getElementById("eventCards");
             container.innerHTML = "";
@@ -111,19 +125,30 @@
 
             filteredEvents.forEach(e => {
                 container.innerHTML += `
-                    <div class="event-card mb-4">
+                    <div class="event-card mb-4" data-event-id="${e.id}">
                         <div class="card-image-placeholder">
                             <svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="#bbb" /></svg>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">${e.name}</h3>
-                            <p class="card-subtitle">${e.kategorija}</p>
+                            <p class="card-subtitle">${e.description ? e.description : ''}</p>
                             <div class="card-rating">
                                 <span class="star">★</span><span class="star">★</span><span class="star">★</span>
                                 <span class="star">☆</span><span class="star">☆</span>
                                 <span class="rating-text">3.0</span>
                             </div>
-                            <button class="card-edit-btn">Detalji</button>
+                            <div class="card-footer d-flex justify-content-between align-items-center mt-3">
+                                <span class="bookmark-icon" onclick="toggleBookmark(${e.id})">♡</span>
+                                 ${
+                                 e.kategorija === 'Event'
+                                ? `<div class="d-flex gap-2">
+                                <a href="/Recenzije/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>
+                                <button class="btn btn-primary btn-sm">Kupi</button>
+                                 </div>`
+                                : `<a href="/Recenzije/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>`
+                                }
+                            </div>
+                            </div>
                         </div>
                     </div>
                 `;

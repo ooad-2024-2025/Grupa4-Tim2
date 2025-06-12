@@ -456,6 +456,17 @@ input[type="range"] {
     transition: all 0.3s ease;
 }
 
+.bookmark-icon {
+    font-size: 20px;
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.2s ease;
+}
+
+    .bookmark-icon.active {
+        color: red;
+    }
+
 .event-card {
     background: white;
     border-radius: 12px;
