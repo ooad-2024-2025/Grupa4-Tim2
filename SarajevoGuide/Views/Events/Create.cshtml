@@ -2,67 +2,99 @@
 
 @{
     ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Create</h1>
+<div class="container mt-6" style="max-width: 720px; margin-top:150px;">
+    <div class="card shadow-sm rounded-4 p-4 border-0">
+        <h2 class="mb-4 fw-semibold text-center">Create New Event</h2>
 
-<h4>Event</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="Name" class="form-control rounded-3 shadow-sm" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Kategorija" class="control-label"></label>
-                <select asp-for="Kategorija" asp-items="ViewBag.Kategorija" class="form-control"></select>
-                <span asp-validation-for="Kategorija" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="Description" class="form-control rounded-3 shadow-sm" />
+                <span asp-validation-for="Description" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Kategorija" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <select asp-for="Kategorija" asp-items="ViewBag.Kategorija" class="form-select rounded-3 shadow-sm" id="category-select"></select>
             </div>
-            <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
+
+            <div class="mb-3" id="start-date-group">
+                <label asp-for="StartDate" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="StartDate" class="form-control rounded-3 shadow-sm" />
             </div>
-            <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
+
+            <div class="mb-3" id="end-date-group">
+                <label asp-for="EndDate" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="EndDate" class="form-control rounded-3 shadow-sm" />
             </div>
-            <div class="form-group">
-                <label asp-for="Lat" class="control-label"></label>
-                <input asp-for="Lat" class="form-control" type="number" step="any" />
-                <span asp-validation-for="Lat" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Lat" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="Lat" type="number" step="any" class="form-control rounded-3 shadow-sm" />
+                <span asp-validation-for="Lat" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Lng" class="control-label"></label>
-                <input asp-for="Lng" class="form-control" type="number" step="any" />
-                <span asp-validation-for="Lng" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="Lng" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="Lng" type="number" step="any" class="form-control rounded-3 shadow-sm" />
+                <span asp-validation-for="Lng" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
+
+            <div class="mb-4">
+                <label asp-for="Price" class="form-label text-uppercase small fw-bold text-muted"></label>
+                <input asp-for="Price" class="form-control rounded-3 shadow-sm" />
+                <span asp-validation-for="Price" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <div class="d-flex justify-content-between align-items-center">
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                <button type="submit" class="btn btn-danger rounded-circle" style="width: 50px; height: 50px; font-size: 26px; line-height: 1;">+</button>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function toggleDateFields() {
+            const category = document.getElementById("category-select").value;
+            const hide = category === "0" || category === "1";
+
+            const startDateGroup = document.getElementById("start-date-group");
+            const endDateGroup = document.getElementById("end-date-group");
+
+            if (hide) {
+                startDateGroup.classList.add("d-none");
+                endDateGroup.classList.add("d-none");
+            } else {
+                startDateGroup.classList.remove("d-none");
+                endDateGroup.classList.remove("d-none");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const select = document.getElementById("category-select");
+            toggleDateFields(); // run initially
+            select.addEventListener("change", toggleDateFields);
+        });
+    </script>
 }
+
+
+
+
+

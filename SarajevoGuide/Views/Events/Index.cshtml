@@ -6,26 +6,28 @@
 <div class="admin-container">
     <div class="sidebar">
         <div class="section-title">MANAGE ITEMS</div>
-        <button class="category-btn">
-            <img src="/images/sights.png" alt="Sights" />
+
+        <a class="category-btn" href="#" data-category="Sight">
+            <img src="/images/camera.png" alt="Sights" />
             Sights
-        </button>
-        <button class="category-btn active">
+        </a>
+        <a class="category-btn" href="#" data-category="Event">
             <img src="/images/event.png" alt="Events" />
             Events
-        </button>
-        <button class="category-btn">
+        </a>
+        <a class="category-btn" href="#" data-category="Rest">
             <img src="/images/coffee.png" alt="Rest" />
             Rest
-        </button>
+        </a>
 
         <div class="section-title" style="margin-top: 30px;">MANAGE ACCOUNTS</div>
+
         <button class="category-btn">
-            <img src="/images/users-icon.png" alt="Users" />
+            <img src="/images/user.png" alt="Users" />
             Users
         </button>
-        <button class="category-btn">
-            <img src="/images/admin-icon.png" alt="Administrators" />
+        <button class="category-btn-admin">
+            <img width="96" height="96" src="https://img.icons8.com/material-rounded/96/admin-settings-male.png" alt="admin-settings-male" />
             Administrators
         </button>
     </div>
@@ -57,8 +59,8 @@
                         <td>@Html.DisplayFor(modelItem => item.Name)</td>
                         <td>@Html.DisplayFor(modelItem => item.Kategorija)</td>
                         <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Kategorija)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                        <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
                         <td>@item.Lat</td>
                         <td>@item.Lng</td>
                         <td>@item.Price KM</td>
@@ -73,3 +75,30 @@
         </table>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.category-btn[data-category]').forEach(button => {
+        let clickCount = 0;
+
+        button.addEventListener('click', function (e) {
+            e.preventDefault(); // Prevent immediate navigation
+            clickCount++;
+
+            setTimeout(() => {
+                const category = this.dataset.category;
+
+                if (clickCount === 1) {
+                    // Single click = filter by category
+                    if (category) {
+                        window.location.href = `?category=${category}`;
+                    }
+                } else if (clickCount === 2) {
+                    // Double click = reset filter
+                    window.location.href = `/Events`;
+                }
+
+                clickCount = 0;
+            }, 250);
+        });
+    });
+</script>

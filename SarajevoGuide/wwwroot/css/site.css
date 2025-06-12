@@ -147,6 +147,46 @@ html, body {
     min-width: 200px;
 }
 
+.category-btn-admin {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 30px;
+    margin-bottom: 12px;
+    border: none;
+    background-color: #f1f1f1;
+    border-radius: 24px;
+    font-weight: 500;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 16px;
+    min-width: 200px;
+}
+    .category-btn-admin:hover {
+        background-color: #f36d5a;
+        color: white;
+    }
+
+    .category-btn-admin.active {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .category-btn-admin img {
+        width: 25px;
+        height: 25px;
+        filter: brightness(0) saturate(100%); /* normal dark */
+        transition: filter 0.3s ease;
+    }
+
+    .category-btn-admin:hover img,
+    .category-btn-admin.active img {
+        filter: brightness(0) invert(1); /* white */
+    }
+
     .category-btn:hover {
         background-color: #f36d5a;
         color: white;
@@ -306,8 +346,8 @@ input[type="range"] {
     }
 
     .admin-header a.btn {
-        font-size: 16px;
-        padding: 8px 20px;
+        font-size: 30px;
+        padding: 10px 10px;
         border-radius: 24px;
         background-color: #e74c3c;
         color: white;
