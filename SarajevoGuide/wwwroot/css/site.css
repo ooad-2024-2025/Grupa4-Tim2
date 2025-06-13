@@ -88,6 +88,60 @@ html, body {
     overflow-x: hidden;
 }
 
+.bookmark-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px auto;
+    max-width: 800px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.bookmark-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 16px;
+}
+
+.bookmark-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.bookmark-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.bookmark-description {
+    font-size: 14px;
+    color: #555;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #e74c3c;
+    cursor: pointer;
+    margin-left: 16px;
+    transition: color 0.2s ease;
+}
+
+    .delete-btn:hover {
+        color: #c0392b;
+    }
+
+
 .map-and-cards {
     display: flex;
     flex-grow: 1;
@@ -733,6 +787,8 @@ input[type="range"] {
     .image-placeholder {
         padding: 20px;
     }
+
+
 }
 
 

@@ -115,6 +115,7 @@
                 icon.classList.add('active');
                 icon.textContent = '♥';
             }
+            localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
         }
 
         function renderCards(category) {

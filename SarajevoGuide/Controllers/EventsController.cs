@@ -37,6 +37,24 @@ namespace SarajevoGuide.Controllers
             return Json(events);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetByIds(string ids)
+        {
+            var idList = ids.Split(',').Select(int.Parse).ToList();
+
+            var events = await _context.Event
+                .Where(e => idList.Contains(e.Id))
+                .Select(e => new
+                {
+                    e.Id,
+                    name = e.Name,
+                    description = e.Description,
+                    kategorija = e.Kategorija.ToString()
+                }).ToListAsync();
+
+            return Json(events);
+        }
+
 
         // GET: Events
         public async Task<IActionResult> Index(string category)

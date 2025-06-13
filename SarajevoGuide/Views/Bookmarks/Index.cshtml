@@ -1,41 +1,58 @@
-﻿@model IEnumerable<SarajevoGuide.Models.Bookmark>
-
-@{
+﻿@{
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Event)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Event.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+<h2 class="text-center mb-4">My Bookmarked Events</h2>
+
+<div id="bookmarkList">Loading bookmarks...</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            let ids = JSON.parse(localStorage.getItem("bookmarkedEventIds") || "[]");
+
+            const container = document.getElementById("bookmarkList");
+
+            if (ids.length === 0) {
+                container.innerHTML = "<p class='text-center'>No bookmarks yet.</p>";
+                return;
+            }
+
+            const response = await fetch('/Events/GetByIds?ids=' + ids.join(","));
+            const events = await response.json();
+
+            container.innerHTML = "";
+
+            events.forEach(e => {
+                const card = document.createElement("div");
+                card.className = "bookmark-card";
+                card.dataset.eventId = e.id;
+
+                card.innerHTML = `
+                    <img src="https://picsum.photos/seed/${e.id}/100/100" class="bookmark-image" alt="Image">
+                    <div class="bookmark-info">
+                        <div class="bookmark-title">${e.name}</div>
+                        <div class="bookmark-description">${e.description || ""}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeBookmark(${e.id})">&times;</button>
+                `;
+
+                container.appendChild(card);
+            });
+        });
+
+        function removeBookmark(id) {
+            let ids = JSON.parse(localStorage.getItem("bookmarkedEventIds") || "[]");
+            ids = ids.filter(x => x !== id);
+            localStorage.setItem("bookmarkedEventIds", JSON.stringify(ids));
+
+            const card = document.querySelector(`.bookmark-card[data-event-id='${id}']`);
+            if (card) card.remove();
+
+            if (ids.length === 0) {
+                document.getElementById("bookmarkList").innerHTML = "<p class='text-center'>No bookmarks yet.</p>";
+            }
+        }
+    </script>
 }
-    </tbody>
-</table>
