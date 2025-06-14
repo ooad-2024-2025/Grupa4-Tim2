@@ -49,8 +49,8 @@
     </div>
 
     <div class="map-and-cards" style="display: flex; flex-grow: 1;">
-        <div id="eventCards" class="event-cards" style="display: none; width: 40%; padding-right: 16px;"></div>
-        <div id="map" style="width: 60%; height: 600px;"></div>
+        <div id="eventCards" class="event-cards" style="display: none; width: 25%; padding-right: 16px;"></div>
+        <div id="map" style="width: 60%; height: 900px;"></div>
     </div>
 
 </div>
@@ -134,17 +134,17 @@
             localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
         }
 
-        function renderCards(category) {
+               async function renderAllCards() {
             const container = document.getElementById("eventCards");
             container.innerHTML = "";
 
-            const filteredEvents = allEvents.filter(e => e.kategorija === category);
+            for (const e of allEvents) {
+                const imageUrl = await getRealImage(e.name).catch(() => null);
 
-            filteredEvents.forEach(e => {
                 container.innerHTML += `
                     <div class="event-card mb-4" data-event-id="${e.id}">
                         <div class="card-image-placeholder">
-                            <svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="#bbb" /></svg>
+                            ${imageUrl ? `<img src="${imageUrl}" />` : ''}
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">${e.name}</h3>
@@ -156,21 +156,21 @@
                             </div>
                             <div class="card-footer d-flex justify-content-between align-items-center mt-3">
                                 <span class="bookmark-icon" onclick="toggleBookmark(${e.id})">♡</span>
-                                 ${
-                                 e.kategorija === 'Event'
-                                ? `<div class="d-flex gap-2">
-                                <a href="/Recenzije/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>
-                                <button class="btn btn-primary btn-sm">Kupi</button>
-                                 </div>`
-                                : `<a href="/Recenzije/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>`
+                                ${
+                                    e.kategorija === 'Event'
+                                        ? `<div class="d-flex gap-2">
+                                               <a href="/Recenzije/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>
+                                               <button class="btn btn-primary btn-sm">Kupi</button>
+                                           </div>`
+                                        : `<a href="/Recenzije/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>`
                                 }
-                            </div>
                             </div>
                         </div>
                     </div>
                 `;
-            });
+            }
         }
+
 
 
         function filterMarkers(category) {
