@@ -95,7 +95,7 @@
             for (const event of allEvents) {
             const marker = new google.maps.Marker({
                 position: { lat: event.lat, lng: event.lng },
-                map: null,
+                map: map,
                 title: event.name
             });
 
@@ -120,6 +120,7 @@
         }
         }
 
+
         function toggleBookmark(eventId) {
             const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
             if (bookmarkedIds.has(eventId)) {
@@ -134,17 +135,24 @@
             localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
         }
 
-               async function renderAllCards() {
+
+        function renderCards(category) {
             const container = document.getElementById("eventCards");
-            container.innerHTML = "";
+            container.style.display = "block";
 
-            for (const e of allEvents) {
-                const imageUrl = await getRealImage(e.name).catch(() => null);
+            const filtered = allEvents.filter(e => e.kategorija === category);
 
-                container.innerHTML += `
+            let html = `
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                    <button id="closeBookmarksBtn" style="border: none; background: none; font-size: 20px; cursor: pointer;">✖</button>
+                </div>
+            `;
+
+            for (const e of filtered) {
+                html += `
                     <div class="event-card mb-4" data-event-id="${e.id}">
-                        <div class="card-image-placeholder">
-                            ${imageUrl ? `<img src="${imageUrl}" />` : ''}
+                        <div class="card-image-placeholder" id="img-${e.id}">
+                            <div style="width: 100%; height: 150px; background-color: #eee;"></div>
                         </div>
                         <div class="card-content">
                             <h3 class="card-title">${e.name}</h3>
@@ -169,20 +177,39 @@
                     </div>
                 `;
             }
+
+            container.innerHTML = html;
+
+            const closeBtn = document.getElementById("closeBookmarksBtn");
+            if (closeBtn) {
+                closeBtn.addEventListener("click", hideAllBookmarks);
+            }
+
+            for (const e of filtered) {
+                getRealImage(e.name).then(imageUrl => {
+                    if (imageUrl) {
+                        const img = document.getElementById(`img-${e.id}`);
+                        if (img) img.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: auto;" />`;
+                    }
+                });
+            }
         }
 
 
 
-        function filterMarkers(category) {
+           function filterMarkers(category) {
             const allButtons = document.querySelectorAll('.category-btn');
             const container = document.getElementById("eventCards");
 
             if (currentCategory === category) {
+                // 2nd click → show all markers
                 currentCategory = null;
                 allButtons.forEach(btn => btn.classList.remove('active'));
-                markers.forEach(marker => marker.setMap(null));
-                container.style.display = "none";
+                markers.forEach(marker => marker.setMap(map));
+                container.style.display = "block";
+                renderAllCards(); // show all cards
             } else {
+                // 1st click → filter
                 currentCategory = category;
                 allButtons.forEach(btn => {
                     btn.classList.remove('active');
@@ -190,12 +217,22 @@
                 });
                 markers.forEach(marker => {
                     marker.setMap(marker.kategorija === category ? map : null);
-
                 });
                 container.style.display = "block";
-                renderCards(category);
+                renderCards(category); // filtered cards
             }
         }
+
+                function hideAllBookmarks() {
+            bookmarkedIds.clear();
+            localStorage.removeItem("bookmarkedEventIds");
+
+            document.querySelectorAll(".bookmark-icon").forEach(icon => {
+                icon.classList.remove("active");
+                icon.textContent = "♡";
+            });
+        }
+
 
         window.initMap = initMap;
     </script>
