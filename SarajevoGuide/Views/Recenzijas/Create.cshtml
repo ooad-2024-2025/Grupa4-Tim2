@@ -4,9 +4,13 @@
     ViewData["Title"] = "Create";
 }
 
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
     <form asp-action="Create" method="post" class="text-center" style="width: 100%; max-width: 500px;">
         <input type="hidden" asp-for="EventId" />
+        <div asp-validation-summary="All" class="text-danger mb-2"></div>
 
         <div class="mb-4">
             <textarea asp-for="Komentar"
@@ -21,10 +25,10 @@
             <div id="stars" class="mb-2">
                 @for (int i = 1; i <= 5; i++)
                 {
-                    <input type="radio" id="star@i" name="Ocjena" value="@i" hidden />
-                    <label for="star@i" class="star" style="font-size: 2rem; cursor: pointer;">☆</label>
+                    <label for="star@i" class="star" style="font-size: 2rem; cursor: pointer; color: gold;">☆</label>
                 }
             </div>
+            <input type="hidden" asp-for="Ocjena" id="Ocjena" />
         </div>
 
         <button type="submit" class="btn btn-primary">Pošalji recenziju</button>
@@ -33,13 +37,62 @@
 
 @section Scripts {
     <script>
-        const stars = document.querySelectorAll('.star');
-        stars.forEach((star, index) => {
+        document.querySelectorAll('.star').forEach((star, index) => {
             star.addEventListener('click', () => {
-                stars.forEach((s, i) => {
+                document.querySelectorAll('.star').forEach((s, i) => {
                     s.textContent = i <= index ? '★' : '☆';
+                    s.style.color = i <= index ? 'gold' : 'gray';
+                });
+
+                document.getElementById("Ocjena").value = index + 1;
+            });
+        });
+
+                document.querySelector("form").addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const form = e.target;
+            const selectedRating = document.getElementById("Ocjena").value;
+
+            if (!selectedRating) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Please rate',
+                    text: 'Select a rating before submitting.'
+                });
+                return;
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            }).then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'We appreciate your input',
+                        text: 'Thank you',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        showCloseButton: true
+                    }).then(() => {
+                        window.location.href = "/Home/Index";
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission failed',
+                        text: 'Something went wrong. Please try again.'
+                    });
+                }
+            }).catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Connection error',
+                    text: 'Please check your internet connection.'
                 });
             });
         });
+
+
     </script>
 }

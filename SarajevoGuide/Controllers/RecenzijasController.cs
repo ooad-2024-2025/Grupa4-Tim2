@@ -19,13 +19,13 @@ namespace SarajevoGuide.Controllers
             _context = context;
         }
 
-        // GET: Recenzijas
+        // GET: Recenzija
         public async Task<IActionResult> Index()
         {
             return View(await _context.Recenzija.ToListAsync());
         }
 
-        // GET: Recenzijas/Details/5
+        // GET: Recenzija/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -43,7 +43,7 @@ namespace SarajevoGuide.Controllers
             return View(recenzija);
         }
 
-        // GET: Recenzijas/Create
+        // GET: Recenzija/Create
         public IActionResult Create(int eventID)
         {
             Recenzija recenzija = new Recenzija();
@@ -51,15 +51,18 @@ namespace SarajevoGuide.Controllers
             return View(recenzija);
         }
 
-        // POST: Recenzijas/Create
+        // POST: Recenzija/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,korisnikId,eventId,komentar,ocjena")] Recenzija recenzija)
+        public async Task<IActionResult> Create([Bind("Id,KorisnikId,EventId,Komentar,Ocjena")] Recenzija recenzija)
         {
+            recenzija.KorisnikId = 1;
+          
             if (ModelState.IsValid)
             {
+              
                 _context.Add(recenzija);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
