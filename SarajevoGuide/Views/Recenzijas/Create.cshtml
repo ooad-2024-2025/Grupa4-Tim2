@@ -4,45 +4,42 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <form asp-action="Create" method="post" class="text-center" style="width: 100%; max-width: 500px;">
+        <input type="hidden" asp-for="EventId" />
 
-<h4>Recenzija</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="korisnikId" class="control-label"></label>
-                <input asp-for="korisnikId" class="form-control" />
-                <span asp-validation-for="korisnikId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="eventId" class="control-label"></label>
-                <input asp-for="eventId" class="form-control" />
-                <span asp-validation-for="eventId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="komentar" class="control-label"></label>
-                <input asp-for="komentar" class="form-control" />
-                <span asp-validation-for="komentar" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ocjena" class="control-label"></label>
-                <input asp-for="ocjena" class="form-control" />
-                <span asp-validation-for="ocjena" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+        <div class="mb-4">
+            <textarea asp-for="Komentar"
+                      class="form-control"
+                      rows="6"
+                      placeholder="Ostavite vaš komentar..."
+                      required></textarea>
+        </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+        <div class="mb-4">
+            <label class="form-label">Ocjena:</label>
+            <div id="stars" class="mb-2">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <input type="radio" id="star@i" name="Ocjena" value="@i" hidden />
+                    <label for="star@i" class="star" style="font-size: 2rem; cursor: pointer;">☆</label>
+                }
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Pošalji recenziju</button>
+    </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                stars.forEach((s, i) => {
+                    s.textContent = i <= index ? '★' : '☆';
+                });
+            });
+        });
+    </script>
 }

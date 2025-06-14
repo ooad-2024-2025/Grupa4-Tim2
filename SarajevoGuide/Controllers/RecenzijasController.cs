@@ -34,7 +34,7 @@ namespace SarajevoGuide.Controllers
             }
 
             var recenzija = await _context.Recenzija
-                .FirstOrDefaultAsync(m => m.id == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (recenzija == null)
             {
                 return NotFound();
@@ -44,9 +44,11 @@ namespace SarajevoGuide.Controllers
         }
 
         // GET: Recenzijas/Create
-        public IActionResult Create()
+        public IActionResult Create(int eventID)
         {
-            return View();
+            Recenzija recenzija = new Recenzija();
+            recenzija.EventId = eventID;
+            return View(recenzija);
         }
 
         // POST: Recenzijas/Create
@@ -88,7 +90,7 @@ namespace SarajevoGuide.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("id,korisnikId,eventId,komentar,ocjena")] Recenzija recenzija)
         {
-            if (id != recenzija.id)
+            if (id != recenzija.Id)
             {
                 return NotFound();
             }
@@ -102,7 +104,7 @@ namespace SarajevoGuide.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RecenzijaExists(recenzija.id))
+                    if (!RecenzijaExists(recenzija.Id))
                     {
                         return NotFound();
                     }
@@ -125,7 +127,7 @@ namespace SarajevoGuide.Controllers
             }
 
             var recenzija = await _context.Recenzija
-                .FirstOrDefaultAsync(m => m.id == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (recenzija == null)
             {
                 return NotFound();
@@ -151,7 +153,7 @@ namespace SarajevoGuide.Controllers
 
         private bool RecenzijaExists(int id)
         {
-            return _context.Recenzija.Any(e => e.id == id);
+            return _context.Recenzija.Any(e => e.Id == id);
         }
     }
 }
