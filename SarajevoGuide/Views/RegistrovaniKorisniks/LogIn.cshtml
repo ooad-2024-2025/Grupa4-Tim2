@@ -1,32 +1,42 @@
-﻿
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>Explore Sarajevo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
-</head>
-<body>
-<div class="login-modal-backdrop" id="loginModal" style="display:none;">
-    <div class="login-modal">
-        <button class="login-modal-close" type="button" aria-label="Close" onclick="hideLoginModal()">&times;</button>
-        <div class="login-modal-title">
-            Enter your email and password to log in
-        </div>
-        <form asp-area="Identity" asp-page="/RegistrovaniKorisnik/Login" method="post" autocomplete="off">
-            <input type="hidden" name="ReturnUrl" value="/Home/Index" />
-            <div class="login-form-group">
-                <label for="Input_Email" class="login-form-label">Email</label>
-                <input id="Input_Email" name="Input.Email" class="login-form-input" autocomplete="username" type="email" required />
+﻿@model SarajevoGuide.Models.RegistrovaniKorisnik
+@{
+    ViewData["Title"] = "Login";
+    ViewData["HideNavbar"] = true;
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card p-4 shadow-sm rounded-4" style="width: 100%; max-width: 450px; background-color: #ffffff;">
+        <h2 class="text-center mb-4 fw-bold" style="color: #e44c3c;">Login</h2>
+
+   
+        <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+        <form asp-action="Login" method="post">
+            <div class="mb-3">
+                <label asp-for="email" class="form-label fw-semibold">Email</label>
+                <input asp-for="email" type="email" class="form-control rounded-3" />
+                <span asp-validation-for="email" class="text-danger small"></span>
             </div>
-            <div class="login-form-group">
-                <label for="Input_Password" class="login-form-label">Password</label>
-                <input id="Input_Password" name="Input.Password" class="login-form-input" type="password" autocomplete="current-password" required />
+
+            <div class="mb-4">
+                <label asp-for="lozinka" class="form-label fw-semibold">Password</label>
+                <input asp-for="lozinka" type="password" class="form-control rounded-3" />
+                <span asp-validation-for="lozinka" class="text-danger small"></span>
             </div>
-            <button type="submit" class="login-modal-btn">Log In</button>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn rounded-3 fw-bold" style="background-color: #e44c3c; color: black;">Log In</button>
+            </div>
         </form>
+
+        <div class="text-center">
+            <a asp-action="Index" class="text-muted text-decoration-none">Back</a>
+        </div>
     </div>
 </div>
-</body>
-</html>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

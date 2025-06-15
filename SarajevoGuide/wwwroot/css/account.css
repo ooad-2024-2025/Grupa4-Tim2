@@ -24,6 +24,7 @@
     background: url('https://discoverbih.com/wp-content/uploads/2023/11/rsz_aerial-view-of-sarajevo-downtown-2023-10-29-20-58-38-utc-2048x1280.jpg') center center / cover no-repeat;
 }
 
+
 .auth-content {
     flex: 1;
     background-color: #fff;
@@ -77,6 +78,9 @@
     cursor: pointer;
     margin-bottom: 16px;
     transition: 0.2s ease;
+    text-decoration: none;
+    align-items: center;
+    text-align: center;
 }
 
     .auth-btn.primary {

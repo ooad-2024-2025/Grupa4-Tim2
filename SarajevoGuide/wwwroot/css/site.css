@@ -13,6 +13,14 @@
     height: 70px;
     z-index: 1000;
 }
+.navbar-username {
+    margin-left: auto;
+    margin-right: 1rem;
+    padding-top: 0.5rem;
+    font-size: 1rem;
+    color: #333;
+}
+
 
 .navbar-brand a {
     text-decoration: none;
@@ -140,6 +148,22 @@ html, body {
 
     .delete-btn:hover {
         color: #c0392b;
+    }
+
+.btn-primary-custom {
+    background-color: #e44c3c; /* red background */
+    color: #000; /* black text */
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.3s ease;
+}
+
+    .btn-primary-custom:hover {
+        background-color: #cf3b2d;
+        color: #000;
     }
 
 

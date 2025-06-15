@@ -1,14 +1,21 @@
-﻿namespace SarajevoGuide.Models
+﻿using System.ComponentModel.DataAnnotations;
+namespace SarajevoGuide.Models
+
 {
     public class RegistrovaniKorisnik
     {
         public int id { get; set; }
-        public string ime { get; set; }
-        public string prezime { get; set; }
-        public string email { get; set; }
-        public string lozinka { get; set; }
-        public string username { get; set; }
-    public RegistrovaniKorisnik(int id, string ime, string prezime, string email, string lozinka, string username)
+
+        public string? ime { get; set; }    
+        public string? prezime { get; set; }    
+        [Required, EmailAddress]
+        public string email { get; set; } = default!;
+        [Required, DataType(DataType.Password)]
+        public string lozinka { get; set; } = default!;
+        public string? username { get; set; }  
+
+        public RegistrovaniKorisnik() { }
+        public RegistrovaniKorisnik(int id, string ime, string prezime, string email, string lozinka, string username)
         {
             this.id = id;
             this.ime = ime;

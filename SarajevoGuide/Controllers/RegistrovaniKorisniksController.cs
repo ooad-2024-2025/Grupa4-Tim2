@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,18 @@ namespace SarajevoGuide.Controllers
     public class RegistrovaniKorisniksController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public RegistrovaniKorisniksController(ApplicationDbContext context)
+
+        public RegistrovaniKorisniksController(
+            ApplicationDbContext context,
+            SignInManager<IdentityUser> signInManager,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: RegistrovaniKorisniks
@@ -49,21 +58,108 @@ namespace SarajevoGuide.Controllers
             return View();
         }
 
+        public IActionResult Login()
+        {
+            return View();
+        }
+
         // POST: RegistrovaniKorisniks/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: RegistrovaniKorisniks/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,ime,prezime,email,lozinka,username")] RegistrovaniKorisnik registrovaniKorisnik)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(registrovaniKorisnik);
+
+            // Check if email is already used
+            var existingUser = await _userManager.FindByEmailAsync(registrovaniKorisnik.email);
+            if (existingUser != null)
             {
+                ModelState.AddModelError("email", "Email is already taken.");
+                return View(registrovaniKorisnik);
+            }
+
+            var identityUser = new IdentityUser
+            {
+                UserName = registrovaniKorisnik.username,
+                Email = registrovaniKorisnik.email,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(identityUser, registrovaniKorisnik.lozinka);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(identityUser, "User");
                 _context.Add(registrovaniKorisnik);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Home");
             }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
             return View(registrovaniKorisnik);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login([Bind("email,lozinka")] RegistrovaniKorisnik model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Special case for Admin login
+            if (model.email == "admin@example.com" && model.lozinka == "Admin123!")
+            {
+                var adminUser = await _userManager.FindByEmailAsync(model.email);
+                if (adminUser != null)
+                {
+                    await _signInManager.SignInAsync(adminUser, isPersistent: false);
+                    return RedirectToAction("Index", "Events");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Admin account is not set up.");
+                    return View(model);
+                }
+            }
+
+            // Check if the custom user exists in your table
+            var korisnik = _context.RegistrovaniKorisnik
+                .FirstOrDefault(u => u.email == model.email && u.lozinka == model.lozinka);
+
+            if (korisnik == null)
+            {
+                ModelState.AddModelError("", "Incorrect email or password. Please sign up first.");
+                return View(model);
+            }
+
+            var identityUser = await _userManager.FindByEmailAsync(model.email);
+            if (identityUser == null)
+            {
+                ModelState.AddModelError("", "User identity not found.");
+                return View(model);
+            }
+
+            await _signInManager.SignInAsync(identityUser, isPersistent: false);
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+
+
+
 
         // GET: RegistrovaniKorisniks/Edit/5
         public async Task<IActionResult> Edit(int? id)

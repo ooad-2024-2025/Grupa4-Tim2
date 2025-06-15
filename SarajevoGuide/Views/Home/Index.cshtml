@@ -1,4 +1,8 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+
+@{
     ViewData["Title"] = "Home";
 }
 
@@ -61,6 +65,7 @@
         let currentCategory = null;
         let allEvents = [];
         const bookmarkedIds = new Set();
+        const isLoggedIn = @(SignInManager.IsSignedIn(User).ToString().ToLower());
 
         async function getRealImage(keyword) {
             const response = await fetch('https://google.serper.dev/images', {
@@ -163,7 +168,7 @@
                                 <span class="rating-text">3.0</span>
                             </div>
                             <div class="card-footer d-flex justify-content-between align-items-center mt-3">
-                                <span class="bookmark-icon" onclick="toggleBookmark(${e.id})">♡</span>
+                                ${isLoggedIn ? `<span class="bookmark-icon" onclick="toggleBookmark(${e.id})">♡</span>` : ''}
                                 ${
                                     e.kategorija === 'Event'
                                         ? `<div class="d-flex gap-2">

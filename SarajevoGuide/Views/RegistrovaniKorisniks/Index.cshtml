@@ -18,15 +18,15 @@
             <button class="auth-close" onclick="window.location.href='/'" aria-label="Close">&times;</button>
             <div class="auth-dot"></div>
             <h1 class="auth-title">Explore Sarajevo</h1>
-            <p class="auth-subtitle">Join us today</p>
-            <button class="auth-btn primary">Sign up with email</button>
+            <p class="auth-subtitle">Join us today</p>      
+            <a asp-controller="RegistrovaniKorisniks" asp-action="Create" class="auth-btn primary">Sign up with email</a>
             <p class="auth-terms">
                 By signing up, you agree to the
                 <a href="#">Terms of Service</a> and
                 <a href="#">Privacy Policy</a>, including <a href="#">cookie use</a>.
             </p>
             <p class="auth-small-text">Already have an account?</p>
-            <button class="auth-btn secondary">Log in</button>
+            <a asp-controller="RegistrovaniKorisniks" asp-action="Login" class="auth-btn secondary">Log in</a>
             <p class="auth-skip" onclick="window.location.href='/'">Or skip for now and explore our website…</p>
         </div>
     </div>
