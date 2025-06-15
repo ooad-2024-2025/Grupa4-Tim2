@@ -30,6 +30,9 @@ namespace SarajevoGuide.Controllers
                 description = e.Description,
                 lat = e.Lat,
                 lng = e.Lng,
+                cost=e.Price,
+                StartDate=e.StartDate,
+                EndDate=e.EndDate,
                 kategorija = e.Kategorija.ToString()
             }).ToListAsync();
 
