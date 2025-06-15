@@ -67,6 +67,14 @@
         const bookmarkedIds = new Set();
         const isLoggedIn = @(SignInManager.IsSignedIn(User).ToString().ToLower());
 
+        // Filter state
+        let currentFilters = {
+            category: null,
+            date: null,
+            cost: null,
+            distance: 10 // max distance in km
+        };
+
         async function getRealImage(keyword) {
             const response = await fetch('https://google.serper.dev/images', {
                 method: 'POST',
@@ -83,7 +91,6 @@
             return data.images?.[0]?.imageUrl || null;
         }
 
-
         async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
 
@@ -98,62 +105,242 @@
             allEvents = await response.json();
 
             for (const event of allEvents) {
-            const marker = new google.maps.Marker({
-                position: { lat: event.lat, lng: event.lng },
-                map: map,
-                title: event.name
-            });
+                const marker = new google.maps.Marker({
+                    position: { lat: event.lat, lng: event.lng },
+                    map: map,
+                    title: event.name
+                });
 
-            marker.kategorija = event.kategorija;
+                marker.kategorija = event.kategorija;
+                marker.eventData = event; // Store full event data
 
-            const imageUrl = await getRealImage(event.name).catch(() => null);
+                const imageUrl = await getRealImage(event.name).catch(() => null);
 
-            const infoHtml = `
-                <div style="max-width: 220px;">
-                    <strong>${event.name}</strong><br>
-                    <span>Category: ${event.kategorija}</span><br>
-                    ${imageUrl ? `<img src="${imageUrl}" alt="Image" style="width: 100%; height: auto; margin-top: 8px; border-radius: 6px;" />` : ''}
-                </div>
-            `;
+                const infoHtml = `
+                    <div style="max-width: 220px;">
+                        <strong>${event.name}</strong><br>
+                        <span>Category: ${event.kategorija}</span><br>
+                        ${event.cost ? `<span>Cost: $${event.cost}</span><br>` : ''}
+                        ${event.date ? `<span>Date: ${new Date(event.date).toLocaleDateString()}</span><br>` : ''}
+                        ${imageUrl ? `<img src="${imageUrl}" alt="Image" style="width: 100%; height: auto; margin-top: 8px; border-radius: 6px;" />` : ''}
+                    </div>
+                `;
 
-            marker.addListener("click", () => {
-                infoWindow.setContent(infoHtml);
-                infoWindow.open(map, marker);
-            });
+                marker.addListener("click", () => {
+                    infoWindow.setContent(infoHtml);
+                    infoWindow.open(map, marker);
+                });
 
-            markers.push(marker);
-        }
-        }
-
-
-        function toggleBookmark(eventId) {
-            const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
-            if (bookmarkedIds.has(eventId)) {
-                bookmarkedIds.delete(eventId);
-                icon.classList.remove('active');
-                icon.textContent = '♡';
-            } else {
-                bookmarkedIds.add(eventId);
-                icon.classList.add('active');
-                icon.textContent = '♥';
+                markers.push(marker);
             }
-            localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
+
+            // Initialize filter event listeners
+            initializeFilterListeners();
         }
 
+        function initializeFilterListeners() {
+            // Date filter listeners
+            const dateRadios = document.querySelectorAll('input[name="date"]');
+            dateRadios.forEach((radio, index) => {
+                radio.addEventListener('change', () => {
+                    if (radio.checked) {
+                        switch(index) {
+                            case 0: currentFilters.date = 'today'; break;
+                            case 1: currentFilters.date = 'tomorrow'; break;
+                            case 2: currentFilters.date = 'thisweek'; break;
+                            case 3:
+                                // For "Pick a date" - you might want to implement a date picker
+                                currentFilters.date = 'custom';
+                                break;
+                        }
+                        applyAllFilters();
+                    }
+                });
+            });
 
-        function renderCards(category) {
+            // Cost filter listeners
+            const costRadios = document.querySelectorAll('input[name="cost"]');
+            costRadios.forEach((radio, index) => {
+                radio.addEventListener('change', () => {
+                    if (radio.checked) {
+                        switch(index) {
+                            case 0: currentFilters.cost = 'low'; break;    // $0-10
+                            case 1: currentFilters.cost = 'medium'; break; // $11-20
+                            case 2: currentFilters.cost = 'high'; break;   // $21+
+                        }
+                        applyAllFilters();
+                    }
+                });
+            });
+
+            // Distance filter listener
+            const distanceSlider = document.querySelector('.custom-range');
+            if (distanceSlider) {
+                distanceSlider.addEventListener('input', (e) => {
+                    currentFilters.distance = parseInt(e.target.value);
+                    updateDistanceLabels(e.target.value);
+                    applyAllFilters();
+                });
+            }
+        }
+
+        function updateDistanceLabels(value) {
+            const labelsDiv = document.querySelector('.distance-labels');
+            if (labelsDiv) {
+                labelsDiv.innerHTML = `<span>0 m</span><span>${value} km</span>`;
+            }
+        }
+
+        function isDateInRange(eventDate, filterType) {
+            if (!eventDate || !filterType) return true;
+
+            const today = new Date();
+            const eventDateObj = new Date(eventDate);
+
+            // Reset time to start of day for accurate comparison
+            today.setHours(0, 0, 0, 0);
+            eventDateObj.setHours(0, 0, 0, 0);
+
+            switch(filterType) {
+                case 'today':
+                    return eventDateObj.getTime() === today.getTime();
+
+                case 'tomorrow':
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(today.getDate() + 1);
+                    return eventDateObj.getTime() === tomorrow.getTime();
+
+                case 'thisweek':
+                    const weekStart = new Date(today);
+                    const weekEnd = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+                    weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
+                    return eventDateObj >= weekStart && eventDateObj <= weekEnd;
+
+                case 'custom':
+                    // Implement custom date logic here if needed
+                    return true;
+
+                default:
+                    return true;
+            }
+        }
+
+        function isCostInRange(eventCost, filterType) {
+            if (!eventCost || !filterType) return true;
+
+            const cost = parseFloat(eventCost);
+
+            switch(filterType) {
+                case 'low':    // $0-10
+                    return cost >= 0 && cost <= 10;
+                case 'medium': // $11-20
+                    return cost >= 11 && cost <= 20;
+                case 'high':   // $21+
+                    return cost >= 21;
+                default:
+                    return true;
+            }
+        }
+
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function isWithinDistance(eventLat, eventLng, maxDistance) {
+            const centerLat = 43.8563; // Sarajevo center
+            const centerLng = 18.4131;
+            const distance = calculateDistance(centerLat, centerLng, eventLat, eventLng);
+            return distance <= maxDistance;
+        }
+
+        function applyAllFilters() {
+            const filteredEvents = allEvents.filter(event => {
+                // Category filter
+                if (currentFilters.category && event.kategorija !== currentFilters.category) {
+                    return false;
+                }
+
+                // Date filter
+                if (currentFilters.date && !isDateInRange(event.date, currentFilters.date)) {
+                    return false;
+                }
+
+                // Cost filter
+                if (currentFilters.cost && !isCostInRange(event.cost, currentFilters.cost)) {
+                    return false;
+                }
+
+                // Distance filter
+                if (!isWithinDistance(event.lat, event.lng, currentFilters.distance)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Update markers on map
+            markers.forEach(marker => {
+                const shouldShow = filteredEvents.some(event =>
+                    event.lat === marker.getPosition().lat() &&
+                    event.lng === marker.getPosition().lng()
+                );
+                marker.setMap(shouldShow ? map : null);
+            });
+
+            // Update cards display
+            if (currentFilters.category) {
+                renderFilteredCards(filteredEvents);
+            } else if (filteredEvents.length < allEvents.length) {
+                // Show cards if any filters are active
+                renderFilteredCards(filteredEvents);
+            }
+        }
+
+        function filterMarkers(category) {
+            const allButtons = document.querySelectorAll('.category-btn');
+            const container = document.getElementById("eventCards");
+
+            if (currentFilters.category === category) {
+                // 2nd click → remove category filter
+                currentFilters.category = null;
+                allButtons.forEach(btn => btn.classList.remove('active'));
+
+                // If no other filters are active, hide cards
+                if (!currentFilters.date && !currentFilters.cost && currentFilters.distance === 10) {
+                    container.style.display = "none";
+                }
+            } else {
+                // 1st click → set category filter
+                currentFilters.category = category;
+                allButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.category === category) btn.classList.add('active');
+                });
+            }
+
+            applyAllFilters();
+        }
+
+        function renderFilteredCards(filteredEvents) {
             const container = document.getElementById("eventCards");
             container.style.display = "block";
 
-            const filtered = allEvents.filter(e => e.kategorija === category);
-
             let html = `
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 14px; color: #666;">${filteredEvents.length} results</span>
                     <button id="closeBookmarksBtn" style="border: none; background: none; font-size: 20px; cursor: pointer;">✖</button>
                 </div>
             `;
 
-            for (const e of filtered) {
+            for (const e of filteredEvents) {
                 html += `
                     <div class="event-card mb-4" data-event-id="${e.id}">
                         <div class="card-image-placeholder" id="img-${e.id}">
@@ -162,6 +349,8 @@
                         <div class="card-content">
                             <h3 class="card-title">${e.name}</h3>
                             <p class="card-subtitle">${e.description ? e.description : ''}</p>
+                            ${e.cost ? `<p class="card-cost" style="color: #28a745; font-weight: bold;">Cost: $${e.cost}</p>` : ''}
+                            ${e.date ? `<p class="card-date" style="color: #007bff;">Date: ${new Date(e.date).toLocaleDateString()}</p>` : ''}
                             <div class="card-rating">
                                 <span class="star">★</span><span class="star">★</span><span class="star">★</span>
                                 <span class="star">☆</span><span class="star">☆</span>
@@ -187,10 +376,14 @@
 
             const closeBtn = document.getElementById("closeBookmarksBtn");
             if (closeBtn) {
-                closeBtn.addEventListener("click", hideAllBookmarks);
+                closeBtn.addEventListener("click", () => {
+                    container.style.display = "none";
+                    clearAllFilters();
+                });
             }
 
-            for (const e of filtered) {
+            // Load images for filtered events
+            for (const e of filteredEvents) {
                 getRealImage(e.name).then(imageUrl => {
                     if (imageUrl) {
                         const img = document.getElementById(`img-${e.id}`);
@@ -200,35 +393,43 @@
             }
         }
 
+        function clearAllFilters() {
+            currentFilters = {
+                category: null,
+                date: null,
+                cost: null,
+                distance: 10
+            };
 
-
-           function filterMarkers(category) {
-            const allButtons = document.querySelectorAll('.category-btn');
-            const container = document.getElementById("eventCards");
-
-            if (currentCategory === category) {
-                // 2nd click → show all markers
-                currentCategory = null;
-                allButtons.forEach(btn => btn.classList.remove('active'));
-                markers.forEach(marker => marker.setMap(map));
-                container.style.display = "block";
-                renderAllCards(); // show all cards
-            } else {
-                // 1st click → filter
-                currentCategory = category;
-                allButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.dataset.category === category) btn.classList.add('active');
-                });
-                markers.forEach(marker => {
-                    marker.setMap(marker.kategorija === category ? map : null);
-                });
-                container.style.display = "block";
-                renderCards(category); // filtered cards
+            // Reset UI elements
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('input[name="date"]').forEach(radio => radio.checked = false);
+            document.querySelectorAll('input[name="cost"]').forEach(radio => radio.checked = false);
+            const distanceSlider = document.querySelector('.custom-range');
+            if (distanceSlider) {
+                distanceSlider.value = 10;
+                updateDistanceLabels(10);
             }
+
+            // Show all markers
+            markers.forEach(marker => marker.setMap(map));
         }
 
-                function hideAllBookmarks() {
+        function toggleBookmark(eventId) {
+            const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
+            if (bookmarkedIds.has(eventId)) {
+                bookmarkedIds.delete(eventId);
+                icon.classList.remove('active');
+                icon.textContent = '♡';
+            } else {
+                bookmarkedIds.add(eventId);
+                icon.classList.add('active');
+                icon.textContent = '♥';
+            }
+            localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
+        }
+
+        function hideAllBookmarks() {
             bookmarkedIds.clear();
             localStorage.removeItem("bookmarkedEventIds");
 
@@ -238,6 +439,15 @@
             });
         }
 
+        // Legacy functions for compatibility
+        function renderCards(category) {
+            const filtered = allEvents.filter(e => e.kategorija === category);
+            renderFilteredCards(filtered);
+        }
+
+        function renderAllCards() {
+            renderFilteredCards(allEvents);
+        }
 
         window.initMap = initMap;
     </script>

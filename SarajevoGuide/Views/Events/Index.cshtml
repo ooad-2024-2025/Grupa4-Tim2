@@ -1,7 +1,6 @@
 ﻿@model IEnumerable<SarajevoGuide.Models.Event>
 @{
     ViewData["Title"] = "Events - Admin";
-    ViewData["HideNavbar"] = true;
 }
 
 <div class="admin-container">
@@ -42,7 +41,7 @@
         <div class="cards-grid">
             @foreach (var item in Model)
             {
-                <div class="event-card" onclick="openEventDetails(@item.Id)">
+                <div class="event-card" onclick="openEventModal(@item.Id, '@Html.Raw(Html.Encode(item.Name))', '@item.Kategorija', '@Html.Raw(Html.Encode(item.Description))', '@item.StartDate?.ToString("yyyy-MM-dd")', '@item.EndDate?.ToString("yyyy-MM-dd")', '@item.Price', '@item.Lat', '@item.Lng')">
                     <div class="card-image-placeholder">
                         <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -92,25 +91,477 @@
     </div>
 </div>
 
+<!-- Event Details Modal -->
+<div class="modal-overlay" id="eventDetailsModal" style="display: none;">
+    <div class="event-details-modal">
+        <!-- Close Button -->
+        <button class="modal-close-btn" onclick="closeEventModal()">&times;</button>
+
+        <div class="modal-content-wrapper">
+            <!-- Left Side - Image and Basic Info -->
+            <div class="modal-left">
+                <div class="event-image-container">
+                    <div class="event-image-placeholder">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21,15 16,10 5,21" />
+                        </svg>
+                    </div>
+                    <button class="change-image-btn">Change Image</button>
+                </div>
+
+                <div class="event-basic-info">
+                    <h2 class="event-title" id="modalEventTitle"></h2>
+                    <p class="event-category" id="modalEventCategory"></p>
+
+                    <div class="event-rating">
+                        <span class="star">☆</span>
+                        <span class="star">☆</span>
+                        <span class="star">☆</span>
+                        <span class="star">☆</span>
+                        <span class="star">☆</span>
+                        <span class="rating-text">(0 reviews)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Details Form -->
+            <div class="modal-right">
+                <div class="details-section">
+                    <h3 class="section-heading">Event Details</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Event Name</label>
+                        <input type="text" class="form-control" id="modalEventName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-control" id="modalEventCategorySelect" asp-items="ViewBag.Kategorija">
+                            <!-- Options populated from ViewBag.Kategorija -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control description-field" id="modalEventDescription"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="modalEventStartDate" />
+                        </div>
+                        <div class="form-group half-width">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="modalEventEndDate" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Price (KM)</label>
+                        <input type="number" step="0.01" class="form-control" id="modalEventPrice" />
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label class="form-label">Latitude</label>
+                            <input type="number" step="any" class="form-control" id="modalEventLat" />
+                        </div>
+                        <div class="form-group half-width">
+                            <label class="form-label">Longitude</label>
+                            <input type="number" step="any" class="form-control" id="modalEventLng" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Section -->
+                <div class="reviews-section">
+                    <h3 class="section-heading">Reviews</h3>
+
+                    <div class="review-item">
+                        <label class="form-label">Review Title</label>
+                        <input type="text" class="form-control" placeholder="No reviews yet" readonly />
+                    </div>
+
+                    <div class="review-item">
+                        <label class="form-label">Review Body</label>
+                        <textarea class="form-control" placeholder="No reviews available" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+            <button class="btn-success" id="modalApplyBtn" onclick="applyChanges()">Apply Changes</button>
+            <button class="btn-primary" id="modalEditBtn" onclick="editCurrentEvent()">Edit Event</button>
+            <button class="btn-danger" id="modalDeleteBtn" onclick="deleteCurrentEvent()">Delete Item</button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-spinner"></div>
+</div>
+
+<style>
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+        .modal-overlay.show {
+            opacity: 1;
+        }
+
+    .event-details-modal {
+        background: white;
+        border-radius: 8px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .event-details-modal {
+        transform: scale(1);
+    }
+
+    .modal-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+        z-index: 1001;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-close-btn:hover {
+            color: #000;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+        }
+
+    .modal-content-wrapper {
+        display: flex;
+        padding: 20px;
+        gap: 30px;
+    }
+
+    .modal-left {
+        flex: 0 0 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .modal-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .event-image-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .event-image-placeholder {
+        width: 200px;
+        height: 150px;
+        background-color: #f5f5f5;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+    }
+
+    .change-image-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .change-image-btn:hover {
+            background-color: #0056b3;
+        }
+
+    .event-basic-info {
+        text-align: center;
+    }
+
+    .event-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 0 8px 0;
+    }
+
+    .event-category {
+        color: #666;
+        font-size: 16px;
+        margin: 0 0 15px 0;
+    }
+
+    .event-rating {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+    }
+
+    .star {
+        color: #ffc107;
+        font-size: 16px;
+    }
+
+    .rating-text {
+        margin-left: 8px;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .details-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .reviews-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .section-heading {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 0 20px 0;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group.half-width {
+            flex: 1;
+        }
+
+    .form-row {
+        display: flex;
+        gap: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: #fff;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+    .description-field {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .review-item {
+        margin-bottom: 15px;
+    }
+
+    .modal-footer {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-secondary {
+        padding: 8px 16px;
+        border: 1px solid #6c757d;
+        background-color: #6c757d;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+            border-color: #545b62;
+        }
+
+    .btn-primary {
+        padding: 8px 16px;
+        border: 1px solid #007bff;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+    .btn-success {
+        padding: 8px 16px;
+        border: 1px solid #28a745;
+        background-color: #28a745;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+
+    .btn-danger {
+        padding: 8px 16px;
+        border: 1px solid #dc3545;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+        }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .modal-content-wrapper {
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .modal-left {
+            flex: none;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .event-details-modal {
+            width: 95%;
+            max-height: 95vh;
+        }
+    }
+</style>
+
 <script>
+    let currentEventId = null;
+    let originalEventData = null;
+
     // Category filtering functionality
     document.querySelectorAll('.category-btn[data-category]').forEach(button => {
         let clickCount = 0;
 
         button.addEventListener('click', function (e) {
-            e.preventDefault(); // Prevent immediate navigation
+            e.preventDefault();
             clickCount++;
 
             setTimeout(() => {
                 const category = this.dataset.category;
 
                 if (clickCount === 1) {
-                    // Single click = filter by category
                     if (category) {
                         window.location.href = `?category=${category}`;
                     }
                 } else if (clickCount === 2) {
-                    // Double click = reset filter
                     window.location.href = `/Events`;
                 }
 
@@ -119,9 +570,262 @@
         });
     });
 
-    // Function to open event details modal
-    function openEventDetails(eventId) {
-        // Navigate to the Details action which will show the modal
-        window.location.href = '@Url.Action("Details", "Events")' + '/' + eventId;
+    // Function to open event modal
+    function openEventModal(eventId, name, category, description, startDate, endDate, price, lat, lng) {
+        currentEventId = eventId;
+
+        // Store original data for comparison
+        originalEventData = {
+            name: name,
+            category: category,
+            description: description || '',
+            startDate: startDate || '',
+            endDate: endDate || '',
+            price: price || '',
+            lat: lat || '',
+            lng: lng || ''
+        };
+
+        // Populate modal with event data
+        document.getElementById('modalEventTitle').textContent = name;
+        document.getElementById('modalEventCategory').textContent = category;
+        document.getElementById('modalEventName').value = name;
+        document.getElementById('modalEventCategorySelect').value = category;
+        document.getElementById('modalEventDescription').value = description || '';
+        document.getElementById('modalEventStartDate').value = startDate || '';
+        document.getElementById('modalEventEndDate').value = endDate || '';
+        document.getElementById('modalEventPrice').value = price || '';
+        document.getElementById('modalEventLat').value = lat || '';
+        document.getElementById('modalEventLng').value = lng || '';
+
+        // Show modal with animation
+        const modal = document.getElementById('eventDetailsModal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
     }
+
+    // Function to close event modal
+    function closeEventModal() {
+        const modal = document.getElementById('eventDetailsModal');
+        modal.classList.remove('show');
+
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }, 300);
+
+        currentEventId = null;
+        originalEventData = null;
+    }
+
+    // Function to show loading overlay
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    // Function to hide loading overlay
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // Function to show notification
+    function showNotification(message, type = 'success') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()">&times;</button>
+        `;
+
+        // Add notification styles if not already added
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    border-radius: 4px;
+                    color: white;
+                    z-index: 3000;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    max-width: 400px;
+                    animation: slideIn 0.3s ease;
+                }
+                .notification-success { background-color: #28a745; }
+                .notification-error { background-color: #dc3545; }
+                .notification button {
+                    background: none;
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 18px;
+                    padding: 0;
+                    margin-left: auto;
+                }
+                @@keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Function to apply changes
+    async function applyChanges() {
+        if (!currentEventId) {
+            showNotification('No event selected', 'error');
+            return;
+        }
+
+        // Get form data
+        const formData = {
+            Id: currentEventId,
+            Name: document.getElementById('modalEventName').value.trim(),
+            Kategorija: document.getElementById('modalEventCategorySelect').value,
+            Description: document.getElementById('modalEventDescription').value.trim(),
+            StartDate: document.getElementById('modalEventStartDate').value || null,
+            EndDate: document.getElementById('modalEventEndDate').value || null,
+            Price: parseFloat(document.getElementById('modalEventPrice').value) || null,
+            Lat: parseFloat(document.getElementById('modalEventLat').value) || null,
+            Lng: parseFloat(document.getElementById('modalEventLng').value) || null
+        };
+
+        // Basic validation
+        if (!formData.Name) {
+            showNotification('Event name is required', 'error');
+            return;
+        }
+
+        if (!formData.Kategorija) {
+            showNotification('Category is required', 'error');
+            return;
+        }
+
+        // Check if anything has changed
+        const hasChanges = (
+            formData.Name !== originalEventData.name ||
+            formData.Kategorija !== originalEventData.category ||
+            formData.Description !== originalEventData.description ||
+            formData.StartDate !== originalEventData.startDate ||
+            formData.EndDate !== originalEventData.endDate ||
+            (formData.Price || '').toString() !== originalEventData.price.toString() ||
+            (formData.Lat || '').toString() !== originalEventData.lat.toString() ||
+            (formData.Lng || '').toString() !== originalEventData.lng.toString()
+        );
+
+        if (!hasChanges) {
+            showNotification('No changes detected', 'error');
+            return;
+        }
+
+        try {
+            showLoading();
+
+            // Get anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ||
+                         document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+
+            const response = await fetch('/Events/EditModal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(token && { 'RequestVerificationToken': token })
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showNotification(result.message || 'Event updated successfully!', 'success');
+
+                // Update the display elements
+                document.getElementById('modalEventTitle').textContent = formData.Name;
+                document.getElementById('modalEventCategory').textContent = formData.Kategorija;
+
+                // Update original data
+                originalEventData = {
+                    name: formData.Name,
+                    category: formData.Kategorija,
+                    description: formData.Description,
+                    startDate: formData.StartDate || '',
+                    endDate: formData.EndDate || '',
+                    price: formData.Price || '',
+                    lat: formData.Lat || '',
+                    lng: formData.Lng || ''
+                };
+
+                // Optionally refresh the page after a delay to show updated data in the grid
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                if (result.errors && result.errors.length > 0) {
+                    const errorMessages = result.errors.map(error =>
+                        `${error.Field}: ${error.Errors.join(', ')}`).join('\n');
+                    showNotification(`Validation errors:\n${errorMessages}`, 'error');
+                } else {
+                    showNotification(result.message || 'Failed to update event', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error updating event:', error);
+            showNotification('An error occurred while updating the event', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // Function to edit current event (navigate to edit page)
+    function editCurrentEvent() {
+        if (currentEventId) {
+            window.location.href = '@Url.Action("Edit", "Events")' + '/' + currentEventId;
+        }
+    }
+
+    // Function to delete current event
+    function deleteCurrentEvent() {
+        if (currentEventId && confirm('Are you sure you want to delete this event?')) {
+            window.location.href = '@Url.Action("Delete", "Events")' + '/' + currentEventId;
+        }
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-overlay')) {
+            closeEventModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEventModal();
+        }
+    });
 </script>
+
+<!-- Add anti-forgery token for AJAX requests -->
+@Html.AntiForgeryToken()

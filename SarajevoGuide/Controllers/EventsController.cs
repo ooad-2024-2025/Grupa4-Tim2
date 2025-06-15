@@ -20,7 +20,6 @@ namespace SarajevoGuide.Controllers
             _context = context;
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetEvents()
         {
@@ -28,7 +27,7 @@ namespace SarajevoGuide.Controllers
             {
                 e.Id,
                 name = e.Name,
-                description=e.Description,
+                description = e.Description,
                 lat = e.Lat,
                 lng = e.Lng,
                 kategorija = e.Kategorija.ToString()
@@ -55,7 +54,6 @@ namespace SarajevoGuide.Controllers
             return Json(events);
         }
 
-
         // GET: Events
         public async Task<IActionResult> Index(string category)
         {
@@ -68,7 +66,6 @@ namespace SarajevoGuide.Controllers
 
             return View(await events.ToListAsync());
         }
-
 
         // GET: Events/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -161,22 +158,113 @@ namespace SarajevoGuide.Controllers
                 {
                     _context.Update(@event);
                     await _context.SaveChangesAsync();
+
+                    // Check if the request is from AJAX (modal)
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new { success = true, message = "Event updated successfully!" });
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!EventExists(@event.Id))
                     {
+                        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        {
+                            return Json(new { success = false, message = "Event not found." });
+                        }
                         return NotFound();
                     }
                     else
                     {
+                        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        {
+                            return Json(new { success = false, message = "A concurrency error occurred. Please try again." });
+                        }
                         throw;
                     }
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            // If validation failed and it's an AJAX request
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                    .ToArray();
+                return Json(new { success = false, errors = errors });
+            }
+
             PopulateKategorijaDropdown(@event.Kategorija);
             return View(@event);
+        }
+
+        // NEW: AJAX Edit method for modal
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditModal([FromBody] EditEventRequest request)
+        {
+            if (request.Id <= 0)
+            {
+                return Json(new { success = false, message = "Invalid event ID." });
+            }
+
+            var existingEvent = await _context.Event.FindAsync(request.Id);
+            if (existingEvent == null)
+            {
+                return Json(new { success = false, message = "Event not found." });
+            }
+
+            // Update properties
+            existingEvent.Name = request.Name;
+            existingEvent.Description = request.Description;
+            existingEvent.StartDate = request.StartDate;
+            existingEvent.EndDate = request.EndDate;
+            // Fix for CS0266 and CS8629 errors
+            existingEvent.Price = request.Price.HasValue ? (double)request.Price.Value : 0.0;
+            existingEvent.Lat = request.Lat.HasValue ? request.Lat.Value : 0.0;
+            existingEvent.Lng = request.Lng.HasValue ? request.Lng.Value : 0.0;
+
+            // Parse and update category
+            if (Enum.TryParse(request.Kategorija, out Kategorija parsedKategorija))
+            {
+                existingEvent.Kategorija = parsedKategorija;
+            }
+
+            // Validate the model
+            TryValidateModel(existingEvent);
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                    .ToArray();
+                return Json(new { success = false, errors = errors });
+            }
+
+            try
+            {
+                _context.Update(existingEvent);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Event updated successfully!" });
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EventExists(existingEvent.Id))
+                {
+                    return Json(new { success = false, message = "Event not found." });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "A concurrency error occurred. Please try again." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while updating the event." });
+            }
         }
 
         // GET: Events/Delete/5
@@ -223,5 +311,19 @@ namespace SarajevoGuide.Controllers
                                  select new { Value = (int)k, Text = k.ToString() };
             ViewBag.Kategorija = new SelectList(kategorijaList, "Value", "Text", selectedKategorija);
         }
+    }
+
+    // Request model for AJAX edit
+    public class EditEventRequest
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Kategorija { get; set; }
+        public string Description { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public decimal? Price { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
     }
 }
