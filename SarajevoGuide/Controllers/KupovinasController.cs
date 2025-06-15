@@ -56,6 +56,7 @@ namespace SarajevoGuide.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,datumKupovine,brojUlaznica,korisnikId,eventId")] Kupovina kupovina)
         {
+
             if (ModelState.IsValid)
             {
                 _context.Add(kupovina);

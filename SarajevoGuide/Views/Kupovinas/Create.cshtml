@@ -1,48 +1,54 @@
 ﻿@model SarajevoGuide.Models.Kupovina
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Nova kupovina";
+    ViewData["HideNavbar"] = true;
 }
 
-<h1>Create</h1>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card p-4 shadow-sm rounded-4" style="width: 100%; max-width: 500px; background-color: #ffffff;">
+        <h2 class="text-center mb-4 fw-bold" style="color: #e44c3c;">Nova kupovina</h2>
 
-<h4>Kupovina</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="datumKupovine" class="control-label"></label>
-                <input asp-for="datumKupovine" class="form-control" />
-                <span asp-validation-for="datumKupovine" class="text-danger"></span>
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label asp-for="datumKupovine" class="form-label fw-semibold">Datum kupovine</label>
+                <input asp-for="datumKupovine" type="date" class="form-control rounded-3" />
+                <span asp-validation-for="datumKupovine" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="brojUlaznica" class="control-label"></label>
-                <input asp-for="brojUlaznica" class="form-control" />
-                <span asp-validation-for="brojUlaznica" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="brojUlaznica" class="form-label fw-semibold">Broj ulaznica</label>
+                <input asp-for="brojUlaznica" class="form-control rounded-3" min="1"/>
+                <span asp-validation-for="brojUlaznica" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="korisnikId" class="control-label"></label>
-                <input asp-for="korisnikId" class="form-control" />
-                <span asp-validation-for="korisnikId" class="text-danger"></span>
+
+            <div class="mb-3">
+                <label asp-for="korisnikId" class="form-label fw-semibold">Korisnik ID</label>
+                <input asp-for="korisnikId" class="form-control rounded-3" />
+                <span asp-validation-for="korisnikId" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="eventId" class="control-label"></label>
-                <input asp-for="eventId" class="form-control" />
-                <span asp-validation-for="eventId" class="text-danger"></span>
+
+            <div class="mb-4">
+                <label asp-for="eventId" class="form-label fw-semibold">Event ID</label>
+                <input asp-for="eventId" class="form-control rounded-3" />
+                <span asp-validation-for="eventId" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn rounded-3 fw-bold" style="background-color: #e44c3c; color: black;">Sačuvaj</button>
             </div>
         </form>
+
+        <div class="text-center">
+            <a asp-action="Index" class="text-muted text-decoration-none">⟵ Nazad</a>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
