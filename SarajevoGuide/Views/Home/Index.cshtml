@@ -90,8 +90,7 @@
             const data = await response.json();
             return data.images?.[0]?.imageUrl || null;
         }
-
-        async function initMap() {
+                async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
 
             map = new Map(document.getElementById('map'), {
@@ -112,7 +111,7 @@
                 });
 
                 marker.kategorija = event.kategorija;
-                marker.eventData = event; // Store full event data
+                marker.eventData = event;
 
                 const imageUrl = await getRealImage(event.name).catch(() => null);
 
@@ -122,21 +121,40 @@
                         <span>Category: ${event.kategorija}</span><br>
                         ${event.cost ? `<span>Cost: $${event.cost}</span><br>` : ''}
                         ${event.date ? `<span>Date: ${new Date(event.date).toLocaleDateString()}</span><br>` : ''}
-                        ${imageUrl ? `<img src="${imageUrl}" alt="Image" style="width: 100%; height: auto; margin-top: 8px; border-radius: 6px;" />` : ''}
+                        ${imageUrl ? `<img src="${imageUrl}" id="marker-img-${event.id}" style="width: 100%; height: auto; margin-top: 8px; border-radius: 6px; cursor: pointer;" />` : ''}
                     </div>
                 `;
 
                 marker.addListener("click", () => {
                     infoWindow.setContent(infoHtml);
                     infoWindow.open(map, marker);
+
+                    // Attach click event to image when info window is rendered
+                    google.maps.event.addListenerOnce(infoWindow, "domready", () => {
+                        const img = document.getElementById(`marker-img-${event.id}`);
+                        if (img) {
+                            img.addEventListener("click", () => {
+                                const category = marker.kategorija;
+                                const filtered = allEvents.filter(ev => ev.kategorija === category);
+                                renderFilteredCards(filtered);
+                            });
+                        }
+                    });
+                });
+
+                marker.addListener("dblclick", () => {
+                    const category = marker.kategorija;
+                    const filtered = allEvents.filter(ev => ev.kategorija === category);
+                    renderFilteredCards(filtered);
                 });
 
                 markers.push(marker);
             }
 
-            // Initialize filter event listeners
             initializeFilterListeners();
         }
+
+
 
         function initializeFilterListeners() {
             // Date filter listeners

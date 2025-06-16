@@ -44,10 +44,13 @@ namespace SarajevoGuide.Controllers
         }
 
         // GET: Kupovinas/Create
-        public IActionResult Create()
+        public IActionResult Create(string? eventName, int? eventId)
         {
+            ViewData["EventName"] = eventName;
+            ViewData["EventId"] = eventId;
             return View();
         }
+
 
         // POST: Kupovinas/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
