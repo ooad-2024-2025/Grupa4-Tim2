@@ -6,6 +6,16 @@
     ViewData["Title"] = "Home";
 }
 
+@if (TempData["Success"] != null)
+{
+    <div id="success-alert"
+         class="alert alert-success alert-dismissible fade show text-center fw-semibold"
+         role="alert"
+         style="max-width: 600px; margin-top: 120px; margin-left: auto; margin-right: auto;">
+       Successful
+    </div>
+}
+
 <div class="map-container">
     <div class="sidebar">
         <p class="section-title">CATEGORY</p>
@@ -60,6 +70,16 @@
 </div>
 @section Scripts {
     <script>
+
+         setTimeout(() => {
+            const alertBox = document.getElementById("success-alert");
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s ease";
+                alertBox.style.opacity = 0;
+                setTimeout(() => alertBox.remove(), 500);
+            }
+        }, 3000); // 3 seconds
+
         let map;
         let markers = [];
         let currentCategory = null;
@@ -380,7 +400,8 @@
                                     e.kategorija === 'Event'
                                         ? `<div class="d-flex gap-2">
                                                <a href="/Recenzijas/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>
-                                               <a href="/Kupovinas/Create?eventId=${e.id}" class="btn btn-primary btn-sm">Kupi</a>
+                                              <a href="/Kupovinas/Create?eventId=${e.id}&eventName=${encodeURIComponent(e.name)}" class="btn btn-primary btn-sm">Kupi</a>
+
                                          
                                            </div>`
                                         : `<a href="/Recenzijas/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>`
