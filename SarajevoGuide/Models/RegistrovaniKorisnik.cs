@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 namespace SarajevoGuide.Models
 
 {
-    public class RegistrovaniKorisnik
+    public class RegistrovaniKorisnik 
     {
         public int id { get; set; }
 

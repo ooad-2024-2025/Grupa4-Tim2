@@ -1,10 +1,21 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
 
 
 @{
     ViewData["Title"] = "Home";
 }
+
+@if (SignInManager.IsSignedIn(User))
+{
+
+    <input type="hidden" id="userIdHolder" value="@UserManager.GetUserId(User)" />
+    @Html.AntiForgeryToken()
+}
+
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="map-container">
     <div class="sidebar">
@@ -434,18 +445,47 @@
             markers.forEach(marker => marker.setMap(map));
         }
 
-        function toggleBookmark(eventId) {
+        async function toggleBookmark(eventId) {
+            const userId = parseInt(document.getElementById('userIdHolder')?.value, 10);
             const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
-            if (bookmarkedIds.has(eventId)) {
-                bookmarkedIds.delete(eventId);
-                icon.classList.remove('active');
-                icon.textContent = '♡';
-            } else {
-                bookmarkedIds.add(eventId);
-                icon.classList.add('active');
-                icon.textContent = '♥';
+            const isBookmarked = icon.classList.contains('active');
+
+            if (isBookmarked) {
+                console.warn("Unbookmarking not implemented.");
+                return;
             }
-            localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
+
+            const checkRes = await fetch(`/Bookmarks/Exists?userId=${userId}&eventId=${eventId}`);
+            const data = await checkRes.json();
+
+            if (data.exists) {
+        
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Already bookmarked',
+                    text: 'You have already marked this event as your favourite.'
+                });
+                return;
+            }
+
+          
+            fetch('/Bookmarks/Create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ EventId: eventId, UserId: userId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    icon.classList.add('active');
+                    icon.textContent = '♥';
+                } else {
+                    console.error("Failed to save bookmark.");
+                }
+            })
+            .catch(err => console.error(err));
         }
 
         function hideAllBookmarks() {

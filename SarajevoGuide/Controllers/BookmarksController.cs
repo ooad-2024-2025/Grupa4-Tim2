@@ -46,31 +46,35 @@ namespace SarajevoGuide.Controllers
             return View(bookmark);
         }
 
-        // GET: Bookmarks/Create
-        public IActionResult Create()
+       
+
+        [HttpGet]
+        public async Task<IActionResult> Exists(int userId, int eventId)
         {
-            ViewData["EventId"] = new SelectList(_context.Event, "Id", "Id");
-            ViewData["UserId"] = new SelectList(_context.RegistrovaniKorisnik, "id", "id");
-            return View();
+            var exists = await _context.Bookmark
+                .AnyAsync(b => b.UserId == userId && b.EventId == eventId);
+
+            return Ok(new { exists });
         }
+
+
 
         // POST: Bookmarks/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,EventId,UserId")] Bookmark bookmark)
+        public async Task<IActionResult> Create([FromBody] Bookmark bookmark)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(bookmark);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["EventId"] = new SelectList(_context.Event, "Id", "Id", bookmark.EventId);
-            ViewData["UserId"] = new SelectList(_context.RegistrovaniKorisnik, "id", "id", bookmark.UserId);
-            return View(bookmark);
+    
+
+            bookmark.UserId = 1;
+
+            _context.Bookmark.Add(bookmark);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
+
 
         // GET: Bookmarks/Edit/5
         public async Task<IActionResult> Edit(int? id)
