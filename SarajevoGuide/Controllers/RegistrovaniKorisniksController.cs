@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SarajevoGuide.Data;
 using SarajevoGuide.Models;
+using System.Linq;
+using System.Net.Mail;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Threading.Tasks;
 
 namespace SarajevoGuide.Controllers
 {
@@ -16,16 +20,19 @@ namespace SarajevoGuide.Controllers
         private readonly ApplicationDbContext _context;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailSender _emailSender;
 
 
         public RegistrovaniKorisniksController(
             ApplicationDbContext context,
             SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         // GET: RegistrovaniKorisniks
@@ -182,7 +189,7 @@ namespace SarajevoGuide.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,ime,prezime,email,lozinka,username")] RegistrovaniKorisnik registrovaniKorisnik)
+        public async Task<IActionResult> Edit(int id, [Bind("id,ime,prezime,email,lozinka,username")] RegistrovaniKorisnik registrovaniKorisnik, string returnUrl = null)
         {
             if (id != registrovaniKorisnik.id)
             {
@@ -195,6 +202,9 @@ namespace SarajevoGuide.Controllers
                 {
                     _context.Update(registrovaniKorisnik);
                     await _context.SaveChangesAsync();
+
+                    // Redirect to Events Index if no returnUrl is provided
+                    return Redirect(returnUrl ?? Url.Action("Index", "Events"));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -207,7 +217,6 @@ namespace SarajevoGuide.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(registrovaniKorisnik);
         }
@@ -266,5 +275,37 @@ namespace SarajevoGuide.Controllers
         {
             return _context.RegistrovaniKorisnik.Any(e => e.id == id);
         }
+        {
+                var korisnik = await _context.RegistrovaniKorisnik.FindAsync(id);
+                if (korisnik == null)
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                // Find the corresponding IdentityUser
+                korisnik.lozinka = newPassword;
+                _context.Update(korisnik);
+
+                // Send email with the new password
+                var emailSubject = "Your New Password";
+                var emailBody = $@"
+            <h3>Password Reset</h3>
+            <p>Your password has been reset. Here are your new login details:</p>
+            <p><strong>Username:</strong> {korisnik.username}</p>
+            <p><strong>New Password:</strong> {newPassword}</p>
+            <p>Please change your password after logging in.</p>
+            <p>Best regards,<br>SarajevoGuide Team</p>";
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
     }
+
+
+
 }

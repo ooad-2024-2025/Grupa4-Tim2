@@ -262,8 +262,19 @@
 
         <!-- Modal Footer -->
         <div class="modal-footer">
-            <button class="btn-success" id="modalApplyUserBtn" onclick="sendNewPassword()">Send</button>
+            <button class="btn-success" id="modalApplyUserBtn" onclick="editCurrentUser()">Edit</button>
             <button class="btn-danger" id="modalDeleteUserBtn" onclick="deleteCurrentUser()">Delete User</button>
+
+            <script>
+                // ...existing JS code...
+
+                // Function to go to Edit view of RegistrovaniKorisnik
+                function editCurrentUser() {
+                    if (currentUserId) {
+                        window.location.href = '/RegistrovaniKorisniks/Edit/' + currentUserId;
+                    }
+                }
+            </script>
         </div>
     </div>
 </div>
@@ -1263,7 +1274,7 @@
         border-top: 1px solid #eee;
         display: flex;
         justify-content: space-between;
-        gap: 10px;
+        gap: 470px;
     }
 
     .btn-success {

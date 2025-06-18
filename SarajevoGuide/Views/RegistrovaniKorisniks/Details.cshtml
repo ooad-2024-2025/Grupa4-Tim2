@@ -1,48 +1,214 @@
 ﻿@model SarajevoGuide.Models.RegistrovaniKorisnik
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Profile";
 }
 
-<h1>Details</h1>
+<style>
+    body {
+        background-color: #f5f5f5;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-<div>
-    <h4>RegistrovaniKorisnik</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.prezime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.prezime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.lozinka)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.lozinka)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.username)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.username)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .profile-container {
+        padding-top: 100px;
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #4CAF50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        font-weight: bold;
+        margin: 0 auto 1rem;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .profile-info {
+        padding: 2rem;
+    }
+
+    .profile-field {
+        display: flex;
+        margin-bottom: 1.5rem;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+    }
+
+    .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 120px;
+        margin-right: 1rem;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .field-value {
+        color: #333;
+        font-size: 1rem;
+        flex: 1;
+    }
+
+    .profile-actions {
+        padding: 1.5rem 2rem;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 300;
+        margin: 0;
+        text-align: center;
+    }
+
+    .profile-email {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .profile-username {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .city-skyline {
+        height: 60px;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 60"><path d="M0,60 L0,45 L20,45 L20,30 L40,30 L40,20 L60,20 L60,35 L80,35 L80,25 L100,25 L100,40 L120,40 L120,15 L140,15 L140,50 L160,50 L160,35 L180,35 L180,45 L200,45 L200,30 L220,30 L220,55 L240,55 L240,40 L260,40 L260,25 L280,25 L280,50 L300,50 L300,35 L320,35 L320,45 L340,45 L340,30 L360,30 L360,55 L380,55 L380,40 L400,40 L400,25 L420,25 L420,50 L440,50 L440,35 L460,35 L460,45 L480,45 L480,30 L500,30 L500,55 L520,55 L520,40 L540,40 L540,25 L560,25 L560,50 L580,50 L580,35 L600,35 L600,45 L620,45 L620,30 L640,30 L640,55 L660,55 L660,40 L680,40 L680,25 L700,25 L700,50 L720,50 L720,35 L740,35 L740,45 L760,45 L760,30 L780,30 L780,55 L800,55 L800,60 Z" fill="%23ddd"/></svg>') center bottom;
+        background-size: cover;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="container text-center">
+            <div class="profile-avatar">
+                @(Model?.ime?.Substring(0, 1).ToUpper() ?? "U")
+            </div>
+            <h1 class="profile-name">@Html.DisplayFor(model => model.ime) @Html.DisplayFor(model => model.prezime)</h1>
+            <p class="profile-email">@Html.DisplayFor(model => model.email)</p>
+            <span class="profile-username">@@@Html.DisplayFor(model => model.username)</span>
+        </div>
+    </div>
+
+    <div class="profile-info">
+        <div class="profile-field">
+            <div class="field-label">
+                @Html.DisplayNameFor(model => model.ime)
+            </div>
+            <div class="field-value">
+                @Html.DisplayFor(model => model.ime)
+            </div>
+        </div>
+
+        <div class="profile-field">
+            <div class="field-label">
+                @Html.DisplayNameFor(model => model.prezime)
+            </div>
+            <div class="field-value">
+                @Html.DisplayFor(model => model.prezime)
+            </div>
+        </div>
+
+        <div class="profile-field">
+            <div class="field-label">
+                @Html.DisplayNameFor(model => model.email)
+            </div>
+            <div class="field-value">
+                @Html.DisplayFor(model => model.email)
+            </div>
+        </div>
+
+        <div class="profile-field">
+            <div class="field-label">
+                @Html.DisplayNameFor(model => model.username)
+            </div>
+            <div class="field-value">
+                @Html.DisplayFor(model => model.username)
+            </div>
+        </div>
+
+        <div class="profile-field">
+            <div class="field-label">
+                @Html.DisplayNameFor(model => model.lozinka)
+            </div>
+            <div class="field-value">
+                ••••••••
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a asp-action="Edit" asp-route-id="@Model?.id" class="btn btn-primary">Edit Profile</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="city-skyline"></div>
 </div>

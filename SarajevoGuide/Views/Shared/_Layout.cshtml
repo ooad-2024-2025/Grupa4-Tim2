@@ -17,7 +17,7 @@
         {
             <nav class="navbar d-flex justify-content-between align-items-center px-4">
                 <div class="d-flex align-items-center gap-3">
-           
+
                     <a href="/" class="d-flex align-items-center">
                         <div class="logo-circle">
                             <img src="https://img.icons8.com/material-outlined/24/FFFFFF/map--v1.png" alt="map" />
@@ -38,10 +38,10 @@
                         <a href="/Bookmarks" class="nav-link text-decoration-none">Bookmarks</a>
 
                     }
-            
+
                     <a href="/Recenzijas/Reviews" class="nav-link">Reviews</a>
-                      
-                   
+
+
                     @if (SignInManager.IsSignedIn(User))
                     {
                         var user = await UserManager.GetUserAsync(User);
@@ -77,7 +77,7 @@
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
-   
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

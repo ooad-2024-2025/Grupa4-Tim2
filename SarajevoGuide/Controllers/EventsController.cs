@@ -129,6 +129,8 @@ namespace SarajevoGuide.Controllers
         }
 
         // GET: Events/Edit/5
+
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
