@@ -35,17 +35,12 @@
                     <a href="/" class="nav-link">Home</a>
                     @if (SignInManager.IsSignedIn(User))
                     {
-                        <a href="/Bookmarks">Bookmarks</a>
+                        <a href="/Bookmarks/Index">Bookmarks</a>
                     }
-                    @if (SignInManager.IsSignedIn(User))
-                    {
-                        var user = await UserManager.GetUserAsync(User);
-                        var roles = await UserManager.GetRolesAsync(user);
-                        if (roles.Contains("Admin"))
-                        {
-                            <a href="/Recenzijas/Reviews" class="nav-link">Reviews</a>
-                        }
-                    }
+            
+                    <a href="/Recenzijas/Reviews" class="nav-link">Reviews</a>
+                      
+                   
                     @if (SignInManager.IsSignedIn(User))
                     {
                         var user = await UserManager.GetUserAsync(User);
