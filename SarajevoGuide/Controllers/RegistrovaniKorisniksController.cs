@@ -239,7 +239,7 @@ namespace SarajevoGuide.Controllers
             return View(registrovaniKorisnik);
         }
 
-                [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _context.RegistrovaniKorisnik
@@ -275,7 +275,15 @@ namespace SarajevoGuide.Controllers
         {
             return _context.RegistrovaniKorisnik.Any(e => e.id == id);
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendNewPassword(int id, string newPassword)
         {
+            try
+            {
+                // Find the user in your custom table
                 var korisnik = await _context.RegistrovaniKorisnik.FindAsync(id);
                 if (korisnik == null)
                 {
@@ -283,18 +291,43 @@ namespace SarajevoGuide.Controllers
                 }
 
                 // Find the corresponding IdentityUser
+                var identityUser = await _userManager.FindByEmailAsync(korisnik.email);
+                if (identityUser == null)
+                {
+                    return Json(new { success = false, message = "Identity user not found." });
+                }
+
+                // Generate a reset token and reset the password
+                var token = await _userManager.GeneratePasswordResetTokenAsync(identityUser);
+                var result = await _userManager.ResetPasswordAsync(identityUser, token, newPassword);
+
+                if (!result.Succeeded)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = string.Join(", ", result.Errors.Select(e => e.Description))
+                    });
+                }
+
+                // Update the password in your custom table if you're storing it there
                 korisnik.lozinka = newPassword;
                 _context.Update(korisnik);
+                await _context.SaveChangesAsync();
 
                 // Send email with the new password
                 var emailSubject = "Your New Password";
                 var emailBody = $@"
             <h3>Password Reset</h3>
+            <p>Hello {korisnik.ime} {korisnik.prezime},</p>
             <p>Your password has been reset. Here are your new login details:</p>
             <p><strong>Username:</strong> {korisnik.username}</p>
             <p><strong>New Password:</strong> {newPassword}</p>
             <p>Please change your password after logging in.</p>
             <p>Best regards,<br>SarajevoGuide Team</p>";
+
+                await _emailSender.SendEmailAsync(korisnik.email, emailSubject, emailBody);
+
                 return Json(new { success = true });
             }
             catch (Exception ex)
