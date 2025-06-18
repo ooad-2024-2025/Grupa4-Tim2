@@ -1,0 +1,31 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Recenzije";
+}
+
+<div class="text-center my-4">
+    <h2>Recenzije</h2>
+</div>
+
+<div class="d-flex flex-wrap justify-content-center">
+    @foreach (var rec in Model)
+    {
+        <div class="card shadow m-3 p-3" style="width: 300px;">
+            <h5 class="text-center">@rec.Username</h5>
+            <div class="text-center">
+                @for (int i = 0; i < rec.Ocjena; i++)
+                {
+                    <span style="color: gold;">★</span>
+                }
+                @for (int i = rec.Ocjena; i < 5; i++)
+                {
+                    <span style="color: gray;">☆</span>
+                }
+            </div>
+            <div class="mt-2 text-muted text-center">
+                @rec.Komentar
+            </div>
+        </div>
+    }
+</div>

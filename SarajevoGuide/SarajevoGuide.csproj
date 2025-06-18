@@ -30,11 +30,13 @@
 	  <Compile Remove="Migrations\20250617162518_AddIdentityColumnsToRegistrovaniKorisnik.Designer.cs" />
 	  <Compile Remove="Migrations\20250617163707_AddIdentityColumnsToRegistrovaniKorisnik.cs" />
 	  <Compile Remove="Migrations\20250617163707_AddIdentityColumnsToRegistrovaniKorisnik.Designer.cs" />
+	  <Compile Remove="Views\Recenzijas\AdminReviews.cshtml.cs" />
 	  <Compile Remove="Views\RegistrovaniKorisniks\login.cs" />
 	  <Compile Remove="Views\RegistrovaniKorisniks\LogIn.cshtml.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Remove="Views\Recenzijas\AdminReviews.cshtml" />
 	  <Content Remove="Views\RegistrovaniKorisniks\Index1.cshtml" />
 	  <Content Remove="wwwroot\css\bookmark.css" />
 	</ItemGroup>

@@ -37,6 +37,24 @@
                     {
                         <a href="/Bookmarks">Bookmarks</a>
                     }
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        var user = await UserManager.GetUserAsync(User);
+                        var roles = await UserManager.GetRolesAsync(user);
+                        if (roles.Contains("Admin"))
+                        {
+                            <a href="/Recenzijas/Reviews" class="nav-link">Reviews</a>
+                        }
+                    }
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        var user = await UserManager.GetUserAsync(User);
+                        var roles = await UserManager.GetRolesAsync(user);
+                        if (roles.Contains("Admin"))
+                        {
+                            <a href="/Events/Index" class="nav-link">My Events</a>
+                        }
+                    }
                 </div>
                 <div class="navbar-account d-flex align-items-center gap-3">
                     <a href="/RegistrovaniKorisniks" class="d-flex align-items-center text-decoration-none">

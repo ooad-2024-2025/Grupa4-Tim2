@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using SarajevoGuide.Data;
 using SarajevoGuide.Models;
 
@@ -58,17 +60,38 @@ namespace SarajevoGuide.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,KorisnikId,EventId,Komentar,Ocjena")] Recenzija recenzija)
         {
-            recenzija.KorisnikId = 1;
-          
-            if (ModelState.IsValid)
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            var korisnik = _context.RegistrovaniKorisnik.FirstOrDefault(x => x.email == email);
+            if (korisnik == null) return BadRequest();
+
+            recenzija.KorisnikId = korisnik.id;
+
+            if (!ModelState.IsValid)
             {
-              
-                _context.Add(recenzija);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(recenzija); // prikazuje formu ponovo s validacijom
             }
-            return View(recenzija);
+
+            _context.Recenzija.Add(recenzija);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", "Home"); // redirekcija nakon uspjeha
         }
+
+        public IActionResult Reviews()
+        {
+            var recenzije = _context.Recenzija.ToList();
+            var korisnici = _context.RegistrovaniKorisnik.ToDictionary(k => k.id, k => k.username);
+
+            var model = recenzije.Select(r => new
+            {
+                Username = korisnici.TryGetValue(r.KorisnikId, out var username) ? username : "Nepoznat",
+                Ocjena = r.Ocjena,
+                Komentar = r.Komentar
+            }).ToList();
+
+            return View(model);
+        }
+
+
 
         // GET: Recenzijas/Edit/5
         public async Task<IActionResult> Edit(int? id)
