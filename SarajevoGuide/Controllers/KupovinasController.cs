@@ -11,6 +11,8 @@ using SarajevoGuide.Models;
 using System.Security.Claims;
 using System.Net.Mail;
 using System.Net;
+using sib_api_v3_sdk.Api;
+using sib_api_v3_sdk.Model;
 
 namespace SarajevoGuide.Controllers
 {
@@ -57,8 +59,7 @@ namespace SarajevoGuide.Controllers
                 return RedirectToAction("Index", "RegistrovaniKorisniks");
 
             var korisnik = _context.RegistrovaniKorisnik
-                .FirstOrDefault(k => k.email == userEmail);
-
+                                   .FirstOrDefault(k => k.email == userEmail);
             if (korisnik == null)
                 return BadRequest("No RegistrovaniKorisnik found with your email.");
 
@@ -72,40 +73,36 @@ namespace SarajevoGuide.Controllers
 
             var ukupnaCijena = brojUlaznica * ev.Price;
             var body = $@"
-        <h2>Potvrda kupovine</h2>
-        <p>Hvala na kupovini {brojUlaznica} ulaznica za <strong>{ev.Name}</strong>.</p>
-        <p>Ukupna cijena: <strong>{ukupnaCijena} KM</strong></p>
-        <p>Datum: {DateTime.Now:dd.MM.yyyy HH:mm}</p>";
+                <h2>Potvrda kupovine</h2>
+                <p>Hvala na kupovini {brojUlaznica} ulaznica za <strong>{ev.Name}</strong>.</p>
+                <p>Ukupna cijena: <strong>{ukupnaCijena} KM</strong></p>
+                <p>Datum: {DateTime.Now:dd.MM.yyyy HH:mm}</p>";
+
 
             try
             {
-                using var client = new SmtpClient("smtp.gmail.com", 587)
-                {
-                    Credentials = new NetworkCredential("hhodzic550@gmail.com", "zzynbzamljuspzyx"),
-                    EnableSsl = true
-                };
+                var apiInstance = new TransactionalEmailsApi();
+                apiInstance.Configuration.ApiKey["api-key"] = "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";
 
-                var message = new MailMessage("hhodzic550@gmail.com", userEmail)
-                {
-                    Subject = "Potvrda kupovine",
-                    Body = body,
-                    IsBodyHtml = true
-                };
+                var email = new SendSmtpEmail(
+                    sender: new SendSmtpEmailSender("Sarajevo Guide", "hhodzic550@gmail.com"),
+                    to: new List<SendSmtpEmailTo> { new SendSmtpEmailTo(userEmail) },
+                    subject: "Potvrda kupovine",
+                    htmlContent: body
+                );
 
-                await client.SendMailAsync(message);
+                await apiInstance.SendTransacEmailAsync(email);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Kupovina uspješna, ali email nije poslan.";
-                Console.WriteLine("Greška prilikom slanja emaila:");
-                Console.WriteLine("Message: " + ex.Message);
-                Console.WriteLine("InnerException: " + ex.InnerException?.Message);
-                Console.WriteLine("Full error: " + ex.ToString());
+                TempData["ErrorDetails"] = ex.Message;   
             }
 
             TempData["Success"] = "Kupovina uspješna. Potvrda poslana na email.";
             return RedirectToAction("Index", "Home");
         }
+
 
 
 
