@@ -230,6 +230,23 @@ namespace SarajevoGuide.Controllers
             return View(registrovaniKorisnik);
         }
 
+                [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _context.RegistrovaniKorisnik
+                .Select(u => new
+                {
+                    u.id,
+                    u.ime,
+                    u.prezime,
+                    u.email,
+                    u.username
+                })
+                .ToListAsync();
+
+            return Json(users);
+        }
+
         // POST: RegistrovaniKorisniks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

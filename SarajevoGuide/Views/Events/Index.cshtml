@@ -24,14 +24,11 @@
 
         <div class="section-title" style="margin-top: 30px;">MANAGE ACCOUNTS</div>
 
-        <button class="category-btn">
+        <a class="category-btn" href="#" id="usersButton">
             <img src="/images/user.png" alt="Users" />
             Users
-        </button>
-        <button class="category-btn-admin">
-            <img width="96" height="96" src="https://img.icons8.com/material-rounded/96/admin-settings-male.png" alt="admin-settings-male" />
-            Administrators
-        </button>
+        </a>
+
     </div>
 
     <div class="admin-content">
@@ -40,7 +37,7 @@
             <a asp-action="Create" class="btn">+</a>
         </div>
 
-        <div class="cards-grid">
+        <div class="cards-grid" id="contentGrid">
             @foreach (var item in Model)
             {
                 <div class="event-card" onclick="openEventModal(@item.Id, '@Html.Raw(Html.Encode(item.Name))', '@item.Kategorija', '@Html.Raw(Html.Encode(item.Description))', '@item.StartDate?.ToString("dd-MM-yyyy")', '@item.EndDate?.ToString("dd-MM-yyyy")', '@item.Price', '@item.Lat', '@item.Lng')">
@@ -75,9 +72,7 @@
                         </div>
 
                         <div class="card-actions">
-                            <button class="card-edit-btn" onclick="event.stopPropagation(); location.href='@Url.Action("Edit", new { id = item.Id })'">
-                                Edit
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -205,340 +200,160 @@
     <div class="loading-spinner"></div>
 </div>
 
-<style>
-    /* Modal Styles */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
 
-        .modal-overlay.show {
-            opacity: 1;
+
+<!-- User Details Modal -->
+<div class="modal-overlay" id="userDetailsModal" style="display: none;">
+    <div class="user-details-modal" style="padding-top: 29px">
+        <!-- Close Button -->
+        <button class="modal-close-btn" onclick="closeUserModal()">&times;</button>
+
+        <div class="modal-content-wrapper">
+            <!-- Left Side - Image and Basic Info -->
+            <div class="modal-left">
+                <div class="user-image-container">
+                    <div class="user-image-placeholder">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="user-basic-info">
+                    <h2 class="user-title" id="modalUserTitle"></h2>
+                    <p class="user-email" id="modalUserEmail"></p>
+                </div>
+            </div>
+
+            <!-- Right Side - Details Form -->
+            <div class="modal-right">
+                <div class="details-section">
+                    <h3 class="section-heading">User Details</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control" id="modalUsername" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="modalUserEmailInput" />
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="modalUserFirstName" />
+                        </div>
+                        <div class="form-group half-width">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="modalUserLastName" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="modalUserPassword" placeholder="Enter new password or leave blank" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+            <button class="btn-success" id="modalApplyUserBtn" onclick="sendNewPassword()">Send</button>
+            <button class="btn-danger" id="modalDeleteUserBtn" onclick="deleteCurrentUser()">Delete User</button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-spinner"></div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle users button click
+            $('#usersButton').click(function(e) {
+                e.preventDefault();
+                loadUsers();
+            });
+
+            // Function to load users via AJAX
+            function loadUsers() {
+                $('#loadingOverlay').show();
+
+                $.ajax({
+                    url: '/RegistrovaniKorisniks/GetAllUsers',
+                    type: 'GET',
+        success: function(response) {
+            // If response is an array, just render it
+            if (Array.isArray(response)) {
+                renderUsers(response);
+            } else if (response.success) {
+                renderUsers(response.data);
+            } else {
+                alert('Error loading users: ' + response.message);
+            }
+        },
+                    error: function(xhr, status, error) {
+                        alert('Error loading users: ' + error);
+                    },
+                    complete: function() {
+                        $('#loadingOverlay').hide();
+                    }
+                });
+            }
+
+            // Function to render users in the grid
+        function renderUsers(users) {
+            var grid = $('#contentGrid');
+            grid.empty();
+
+            if (users.length === 0) {
+                grid.html('<p>No users found.</p>');
+                return;
+            }
+
+            users.forEach(function(user) {
+                var userCard = `
+                    <div class="event-card" onclick="openUserModal(${user.id}, '${user.username || ''}', '${user.email || ''}', '${user.ime || ''}', '${user.prezime || ''}')">
+                        <div class="card-image-placeholder">
+                            <div style="width: 100%; height: 150px; background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#666">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${user.username || 'No username'}</h3>
+                            <p class="card-subtitle">${user.ime || ''} ${user.prezime || ''}</p>
+
+                            <div class="card-details">
+                                <div class="detail-item">
+                                    <strong>Email:</strong> ${user.email || 'N/A'}
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Name:</strong> ${user.ime || 'N/A'} ${user.prezime || ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.append(userCard);
+            });
         }
+        });
 
-    .event-details-modal {
-        background: white;
-        border-radius: 8px;
-        max-width: 900px;
-        width: 90%;
-        max-height: 90vh;
-        overflow-y: auto;
-        position: relative;
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
-    }
+        // ... rest of your existing JavaScript functions ...
+    </script>
+}
 
-    .modal-overlay.show .event-details-modal {
-        transform: scale(1);
-    }
 
-    .modal-close-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: #666;
-        z-index: 1001;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-        .modal-close-btn:hover {
-            color: #000;
-            background-color: #f0f0f0;
-            border-radius: 50%;
-        }
-
-    .modal-content-wrapper {
-        display: flex;
-        padding: 20px;
-        gap: 30px;
-    }
-
-    .modal-left {
-        flex: 0 0 300px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .modal-right {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .event-image-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .event-image-placeholder {
-        width: 200px;
-        height: 230px;
-        background-color: #f5f5f5;
-        border: 2px dashed #ddd;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #999;
-    }
-
-    .change-image-btn {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-        .change-image-btn:hover {
-            background-color: #0056b3;
-        }
-
-    .event-basic-info {
-        text-align: center;
-    }
-
-    .event-title {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0 0 8px 0;
-    }
-
-    .event-category {
-        color: #666;
-        font-size: 16px;
-        margin: 0 0 15px 0;
-    }
-
-    .event-rating {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-    }
-
-    .star {
-        color: #ffc107;
-        font-size: 16px;
-    }
-
-    .rating-text {
-        margin-left: 8px;
-        color: #666;
-        font-size: 14px;
-    }
-
-    .details-section {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-    }
-
-    .reviews-section {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-    }
-
-    .section-heading {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 0 0 20px 0;
-        color: #333;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-        .form-group.half-width {
-            flex: 1;
-        }
-
-    .form-row {
-        display: flex;
-        gap: 15px;
-    }
-
-    .form-label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 5px;
-        color: #333;
-        font-size: 14px;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        background-color: #fff;
-    }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-
-    .description-field {
-        min-height: 80px;
-        resize: vertical;
-    }
-
-    .review-item {
-        margin-bottom: 15px;
-    }
-
-    .modal-footer {
-        padding: 20px;
-        border-top: 1px solid #eee;
-        display: flex;
-        justify-content: flex-end;
-        gap: 486px;
-    }
-
-    .btn-secondary {
-        padding: 8px 16px;
-        border: 1px solid #6c757d;
-        background-color: #6c757d;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-        .btn-secondary:hover {
-            background-color: #545b62;
-            border-color: #545b62;
-        }
-
-    .btn-primary {
-        padding: 8px 16px;
-        border: 1px solid #007bff;
-        background-color: #007bff;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-
-    .btn-success {
-        padding: 8px 16px;
-        border: 1px solid #28a745;
-        background-color: #28a745;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-        .btn-success:hover {
-            background-color: #218838;
-            border-color: #218838;
-        }
-
-    .btn-danger {
-        padding: 8px 16px;
-        border: 1px solid #dc3545;
-        background-color: #dc3545;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #c82333;
-        }
-
-    /* Loading Overlay */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.3);
-        z-index: 2000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .loading-spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #007bff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    /* Responsive Design */
-    @@media (max-width: 768px) {
-        .modal-content-wrapper {
-            flex-direction: column;
-            padding: 15px;
-        }
-
-        .modal-left {
-            flex: none;
-        }
-
-        .form-row {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .event-details-modal {
-            width: 95%;
-            max-height: 95vh;
-        }
-    }
-</style>
 
 <script>
     let currentEventId = null;
@@ -967,7 +782,71 @@
             }
         }
 
+                            // Helper to generate a random password with at least one uppercase, one number, and one symbol (_ or -)
+                    function generateRandomPassword(length = 10) {
+                        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                        const lower = 'abcdefghijklmnopqrstuvwxyz';
+                        const numbers = '0123456789';
+                        const symbols = '_-';
+                        let all = upper + lower + numbers + symbols;
 
+                        // Ensure at least one of each required character
+                        let password = '';
+                        password += upper[Math.floor(Math.random() * upper.length)];
+                        password += numbers[Math.floor(Math.random() * numbers.length)];
+                        password += symbols[Math.floor(Math.random() * symbols.length)];
+
+                        for (let i = 3; i < length; i++) {
+                            password += all[Math.floor(Math.random() * all.length)];
+                        }
+
+                        // Shuffle password
+                        return password.split('').sort(() => 0.5 - Math.random()).join('');
+                    }
+
+                    // Function to send a new password to the user's email and update the account
+                    async function sendNewPassword() {
+                        if (!currentUserId) {
+                            showNotification('No user selected', 'error');
+                            return;
+                        }
+
+                        const newPassword = generateRandomPassword(10);
+
+                        // Get anti-forgery token
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ||
+                                      document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+
+                        try {
+                            showLoading();
+
+                            const response = await fetch('/RegistrovaniKorisniks/SendNewPassword', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    ...(token && { 'RequestVerificationToken': token })
+                                },
+                                body: JSON.stringify({
+                                    Id: currentUserId,
+                                    NewPassword: newPassword
+                                })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                showNotification('A new password has been sent to the user\'s email.', 'success');
+                                closeUserModal();
+                            } else {
+                                showNotification(result.message || 'Failed to send new password.', 'error');
+                            }
+                        } catch (error) {
+                            showNotification('An error occurred while sending the new password.', 'error');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
 
 
 
@@ -977,8 +856,6 @@
 
 </script>
 
-<!-- Add anti-forgery token for AJAX requests -->
-@Html.AntiForgeryToken()<!-- ...existing code... -->
 
 <script>
     // ...existing JS code...
@@ -1008,7 +885,504 @@
         }
     }
 
-    // ...rest of JS code...
+    let currentUserId = null;
+    let originalUserData = null;
+
+    // Function to open user modal
+    function openUserModal(userId, username, email, firstName, lastName) {
+        currentUserId = userId;
+
+        // Store original data for comparison
+        originalUserData = {
+            username: username || '',
+            email: email || '',
+            firstName: firstName || '',
+            lastName: lastName || ''
+        };
+
+        document.getElementById('modalUserTitle').textContent = username || 'No Username';
+        document.getElementById('modalUserEmail').textContent = email || 'No Email';
+        document.getElementById('modalUsername').value = username || '';
+        document.getElementById('modalUserEmailInput').value = email || '';
+        document.getElementById('modalUserFirstName').value = firstName || '';
+        document.getElementById('modalUserLastName').value = lastName || '';
+        document.getElementById('modalUserPassword').value = ''; // Always empty for security
+
+        const modal = document.getElementById('userDetailsModal');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeUserModal() {
+        const modal = document.getElementById('userDetailsModal');
+        modal.classList.remove('show');
+
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }, 300);
+
+        currentUserId = null;
+        originalUserData = null;
+    }
+
+    // Function to apply user changes
+    async function applyUserChanges() {
+        if (!currentUserId) {
+            showNotification('No user selected', 'error');
+            return;
+        }
+
+        // Get form data
+        const formData = {
+            Id: currentUserId,
+            Username: document.getElementById('modalUsername').value.trim(),
+            Email: document.getElementById('modalUserEmailInput').value.trim(),
+            Ime: document.getElementById('modalUserFirstName').value.trim(),
+            Prezime: document.getElementById('modalUserLastName').value.trim(),
+            Password: document.getElementById('modalUserPassword').value // can be empty
+        };
+
+        // Basic validation
+        if (!formData.Username) {
+            showNotification('Username is required', 'error');
+            return;
+        }
+        if (!formData.Email) {
+            showNotification('Email is required', 'error');
+            return;
+        }
+
+        // Check if anything has changed
+        const hasChanges =
+            formData.Username !== originalUserData.username ||
+            formData.Email !== originalUserData.email ||
+            formData.Ime !== originalUserData.firstName ||
+            formData.Prezime !== originalUserData.lastName ||
+            (formData.Password && formData.Password.length > 0);
+
+        if (!hasChanges) {
+            showNotification('No changes detected', 'error');
+            return;
+        }
+
+        try {
+            showLoading();
+
+            // Get anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ||
+                          document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+
+            const response = await fetch('/RegistrovaniKorisniks/EditModal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(token && { 'RequestVerificationToken': token })
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showNotification(result.message || 'User updated successfully!', 'success');
+
+                // Update the display elements
+                document.getElementById('modalUserTitle').textContent = formData.Username;
+                document.getElementById('modalUserEmail').textContent = formData.Email;
+
+                // Update original data
+                originalUserData = {
+                    username: formData.Username,
+                    email: formData.Email,
+                    firstName: formData.Ime,
+                    lastName: formData.Prezime
+                };
+
+                // Optionally refresh the page after a delay to show updated data in the grid
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                if (result.errors && result.errors.length > 0) {
+                    const errorMessages = result.errors.map(error =>
+                        `${error.Field}: ${error.Errors.join(', ')}`).join('\n');
+                    showNotification(`Validation errors:\n${errorMessages}`, 'error');
+                } else {
+                    showNotification(result.message || 'Failed to update user', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error updating user:', error);
+            showNotification('An error occurred while updating the user', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // Function to delete current user
+    function deleteCurrentUser() {
+        if (currentUserId && confirm('Are you sure you want to delete this user?')) {
+            fetch(`/RegistrovaniKorisniks/Delete/${currentUserId}`, {
+                method: 'POST', // or 'DELETE' if your route accepts it
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // for ASP.NET MVC anti-forgery token
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('User deleted successfully.');
+                    location.reload(); // Or redirect somewhere else if needed
+                } else {
+                    alert('Failed to delete user.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the user.');
+            });
+        }
+    }
+
+    // Close user modal when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-overlay')) {
+            closeUserModal();
+        }
+    });
+    // Close user modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeUserModal();
+        }
+    });
+
+
+
 </script>
 
-<!-- ...existing code... -->
+
+
+<!-- Add anti-forgery token for AJAX requests -->
+@Html.AntiForgeryToken()<!-- ...existing code... -->
+
+
+<style>
+    /* Existing styles from your CSS file */
+    .card-delete-btn {
+        background-color: #ff4444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+
+        .card-delete-btn:hover {
+            background-color: #cc0000;
+        }
+
+    .card-image-placeholder svg {
+        color: #666;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+        .modal-overlay.show {
+            opacity: 1;
+        }
+
+    .user-details-modal, .event-details-modal {
+        background: white;
+        border-radius: 8px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .user-details-modal,
+    .modal-overlay.show .event-details-modal {
+        transform: scale(1);
+    }
+
+    .modal-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+        z-index: 1001;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-close-btn:hover {
+            color: #000;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+        }
+
+    .modal-content-wrapper {
+        display: flex;
+        padding: 20px;
+        gap: 30px;
+    }
+
+    .modal-left {
+        flex: 0 0 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .modal-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .user-image-container, .event-image-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .user-image-placeholder, .event-image-placeholder {
+        width: 200px;
+        height: 230px;
+        background-color: #f5f5f5;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+    }
+
+    .user-basic-info, .event-basic-info {
+        text-align: center;
+    }
+
+    .user-title, .event-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 0 8px 0;
+    }
+
+    .user-email, .event-category {
+        color: #666;
+        font-size: 16px;
+        margin: 0 0 15px 0;
+    }
+
+    .details-section {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .section-heading {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 0 20px 0;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group.half-width {
+            flex: 1;
+        }
+
+    .form-row {
+        display: flex;
+        gap: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: #fff;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+    .modal-footer {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .btn-success {
+        padding: 8px 16px;
+        border: 1px solid #28a745;
+        background-color: #28a745;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+
+    .btn-danger {
+        padding: 8px 16px;
+        border: 1px solid #dc3545;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+        }
+
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Demo styles for the example */
+    .event-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px;
+        cursor: pointer;
+        transition: box-shadow 0.3s ease;
+        width: 375px;
+    }
+
+        .event-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .card-subtitle {
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .card-details {
+        font-size: 14px;
+    }
+
+    .detail-item {
+        margin-bottom: 5px;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .modal-content-wrapper {
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .modal-left {
+            flex: none;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-details-modal, .event-details-modal {
+            width: 95%;
+            max-height: 95vh;
+        }
+    }
+</style>
