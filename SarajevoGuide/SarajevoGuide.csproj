@@ -26,6 +26,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Migrations\20250617162518_AddIdentityColumnsToRegistrovaniKorisnik.cs" />
+	  <Compile Remove="Migrations\20250617162518_AddIdentityColumnsToRegistrovaniKorisnik.Designer.cs" />
+	  <Compile Remove="Migrations\20250617163707_AddIdentityColumnsToRegistrovaniKorisnik.cs" />
+	  <Compile Remove="Migrations\20250617163707_AddIdentityColumnsToRegistrovaniKorisnik.Designer.cs" />
 	  <Compile Remove="Views\RegistrovaniKorisniks\login.cs" />
 	  <Compile Remove="Views\RegistrovaniKorisniks\LogIn.cshtml.cs" />
 	</ItemGroup>

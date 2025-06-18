@@ -43,6 +43,23 @@ namespace SarajevoGuide.Controllers
             return View(kupovina);
         }
 
+        [HttpPost]
+        public IActionResult Create(
+    [FromForm] DateTime datumKupovine,
+    [FromForm] int brojUlaznica,
+    [FromForm] int korisnikId,
+    [FromForm] int eventId
+)
+        {
+            var kupovina = new Kupovina(0, datumKupovine, brojUlaznica, korisnikId, eventId);
+
+            // TODO: Add to DB and save, for example:
+             _context.Kupovina.Add(kupovina);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
         // GET: Kupovinas/Create
         public IActionResult Create(string? eventName, int? eventId)
         {
@@ -55,19 +72,7 @@ namespace SarajevoGuide.Controllers
         // POST: Kupovinas/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,datumKupovine,brojUlaznica,korisnikId,eventId")] Kupovina kupovina)
-        {
-
-            if (ModelState.IsValid)
-            {
-                _context.Add(kupovina);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(kupovina);
-        }
+    
 
         // GET: Kupovinas/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -88,37 +93,7 @@ namespace SarajevoGuide.Controllers
         // POST: Kupovinas/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,datumKupovine,brojUlaznica,korisnikId,eventId")] Kupovina kupovina)
-        {
-            if (id != kupovina.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(kupovina);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!KupovinaExists(kupovina.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(kupovina);
-        }
+      
 
         // GET: Kupovinas/Delete/5
         public async Task<IActionResult> Delete(int? id)
