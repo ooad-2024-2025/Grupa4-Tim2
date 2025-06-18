@@ -13,6 +13,7 @@ using System.Net.Mail;
 using System.Net;
 using sib_api_v3_sdk.Api;
 using sib_api_v3_sdk.Model;
+using Microsoft.Extensions.Configuration;
 
 namespace SarajevoGuide.Controllers
 {
@@ -20,10 +21,13 @@ namespace SarajevoGuide.Controllers
     public class KupovinasController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _config;
 
-        public KupovinasController(ApplicationDbContext context)
+
+        public KupovinasController(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;      
         }
 
         // GET: Kupovinas
@@ -52,7 +56,8 @@ namespace SarajevoGuide.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] int brojUlaznica, [FromForm] int eventId)
+        public async Task<IActionResult> Create([FromForm] int brojUlaznica,
+                                        [FromForm] int eventId)
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             if (userEmail == null)
@@ -67,9 +72,12 @@ namespace SarajevoGuide.Controllers
             if (ev == null)
                 return BadRequest("Event not found.");
 
+            // upis u bazu
             var kupovina = new Kupovina(0, DateTime.Now, brojUlaznica, korisnik.id, eventId);
             _context.Kupovina.Add(kupovina);
             await _context.SaveChangesAsync();
+
+            /* ---------- e-mail ---------- */
 
             var ukupnaCijena = brojUlaznica * ev.Price;
             var body = $@"
@@ -78,25 +86,27 @@ namespace SarajevoGuide.Controllers
                 <p>Ukupna cijena: <strong>{ukupnaCijena} KM</strong></p>
                 <p>Datum: {DateTime.Now:dd.MM.yyyy HH:mm}</p>";
 
-
             try
             {
-                var apiInstance = new TransactionalEmailsApi();
-                apiInstance.Configuration.ApiKey["api-key"] = "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";
+                var apiKey = _config["Brevo:ApiKey"];   // from appsettings / env-var
+                var sender = _config["Brevo:Sender"];   // verified sender address
+
+                var api = new TransactionalEmailsApi();
+                api.Configuration.ApiKey["api-key"] = apiKey;
 
                 var email = new SendSmtpEmail(
-                    sender: new SendSmtpEmailSender("Sarajevo Guide", "hhodzic550@gmail.com"),
+                    sender: new SendSmtpEmailSender("Sarajevo Guide", sender),
                     to: new List<SendSmtpEmailTo> { new SendSmtpEmailTo(userEmail) },
                     subject: "Potvrda kupovine",
                     htmlContent: body
                 );
 
-                await apiInstance.SendTransacEmailAsync(email);
+                await api.SendTransacEmailAsync(email);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Kupovina uspješna, ali email nije poslan.";
-                TempData["ErrorDetails"] = ex.Message;   
+                TempData["ErrorDetails"] = ex.Message;   // vidljivo samo u Development view-u
             }
 
             TempData["Success"] = "Kupovina uspješna. Potvrda poslana na email.";
