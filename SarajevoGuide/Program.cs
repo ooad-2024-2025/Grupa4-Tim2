@@ -19,8 +19,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add Identity
 builder.Services.AddDefaultIdentity<IdentityUser>()
-    .AddRoles<IdentityRole>() // this line enables roles
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/RegistrovaniKorisniks/Index";
+});
+
 
 async Task CreateRolesAndAdminAsync(IServiceProvider serviceProvider)
 {

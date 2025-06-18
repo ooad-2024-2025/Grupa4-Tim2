@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SarajevoGuide.Data;
 using SarajevoGuide.Models;
+using System.Security.Claims;
 
 namespace SarajevoGuide.Controllers
 {
+    [Authorize]
     public class KupovinasController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -43,22 +46,38 @@ namespace SarajevoGuide.Controllers
             return View(kupovina);
         }
 
-        [HttpPost]
-        public IActionResult Create(
-    [FromForm] DateTime datumKupovine,
+
+
+[Authorize]
+    [HttpPost]
+    public IActionResult Create(
     [FromForm] int brojUlaznica,
-    [FromForm] int korisnikId,
     [FromForm] int eventId
 )
-        {
-            var kupovina = new Kupovina(0, datumKupovine, brojUlaznica, korisnikId, eventId);
+    {
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (userEmail == null)
+            return RedirectToAction("Index", "RegistrovaniKorisniks");
 
-            // TODO: Add to DB and save, for example:
-             _context.Kupovina.Add(kupovina);
-            _context.SaveChanges();
+        var korisnik = _context.RegistrovaniKorisnik
+            .FirstOrDefault(k => k.email == userEmail);
 
-            return RedirectToAction("Index");
+        if (korisnik == null)
+            return BadRequest("No RegistrovaniKorisnik found with your email.");
+
+        var kupovina = new Kupovina(0, DateTime.Now, brojUlaznica, korisnik.id, eventId);
+
+        _context.Kupovina.Add(kupovina);
+        _context.SaveChanges();
+
+            TempData["Success"] = "Successfullllll";
+            return RedirectToAction("Index", "Home");
+
+
         }
+
+
+
 
         // GET: Kupovinas/Create
         public IActionResult Create(string? eventName, int? eventId)
@@ -69,10 +88,11 @@ namespace SarajevoGuide.Controllers
         }
 
 
+
         // POST: Kupovinas/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    
+
 
         // GET: Kupovinas/Edit/5
         public async Task<IActionResult> Edit(int? id)

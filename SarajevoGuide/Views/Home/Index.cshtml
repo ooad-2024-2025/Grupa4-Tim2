@@ -1,21 +1,20 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
 
 
 @{
     ViewData["Title"] = "Home";
 }
 
-@if (SignInManager.IsSignedIn(User))
+@if (TempData["Success"] != null)
 {
-
-    <input type="hidden" id="userIdHolder" value="@UserManager.GetUserId(User)" />
-    @Html.AntiForgeryToken()
+    <div id="success-alert"
+         class="alert alert-success alert-dismissible fade show text-center fw-semibold"
+         role="alert"
+         style="max-width: 600px; margin-top: 120px; margin-left: auto; margin-right: auto;">
+       Successful
+    </div>
 }
-
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="map-container">
     <div class="sidebar">
@@ -71,6 +70,16 @@
 </div>
 @section Scripts {
     <script>
+
+         setTimeout(() => {
+            const alertBox = document.getElementById("success-alert");
+            if (alertBox) {
+                alertBox.style.transition = "opacity 0.5s ease";
+                alertBox.style.opacity = 0;
+                setTimeout(() => alertBox.remove(), 500);
+            }
+        }, 3000); // 3 seconds
+
         let map;
         let markers = [];
         let currentCategory = null;
@@ -391,7 +400,8 @@
                                     e.kategorija === 'Event'
                                         ? `<div class="d-flex gap-2">
                                                <a href="/Recenzijas/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>
-                                               <a href="/Kupovinas/Create?eventId=${e.id}" class="btn btn-primary btn-sm">Kupi</a>
+                                              <a href="/Kupovinas/Create?eventId=${e.id}&eventName=${encodeURIComponent(e.name)}" class="btn btn-primary btn-sm">Kupi</a>
+
                                          
                                            </div>`
                                         : `<a href="/Recenzijas/Create?eventId=${e.id}" class="btn btn-outline-secondary btn-sm">Ostavi recenziju</a>`
@@ -445,47 +455,18 @@
             markers.forEach(marker => marker.setMap(map));
         }
 
-        async function toggleBookmark(eventId) {
-            const userId = parseInt(document.getElementById('userIdHolder')?.value, 10);
+        function toggleBookmark(eventId) {
             const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
-            const isBookmarked = icon.classList.contains('active');
-
-            if (isBookmarked) {
-                console.warn("Unbookmarking not implemented.");
-                return;
+            if (bookmarkedIds.has(eventId)) {
+                bookmarkedIds.delete(eventId);
+                icon.classList.remove('active');
+                icon.textContent = '♡';
+            } else {
+                bookmarkedIds.add(eventId);
+                icon.classList.add('active');
+                icon.textContent = '♥';
             }
-
-            const checkRes = await fetch(`/Bookmarks/Exists?userId=${userId}&eventId=${eventId}`);
-            const data = await checkRes.json();
-
-            if (data.exists) {
-        
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Already bookmarked',
-                    text: 'You have already marked this event as your favourite.'
-                });
-                return;
-            }
-
-          
-            fetch('/Bookmarks/Create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify({ EventId: eventId, UserId: userId })
-            })
-            .then(response => {
-                if (response.ok) {
-                    icon.classList.add('active');
-                    icon.textContent = '♥';
-                } else {
-                    console.error("Failed to save bookmark.");
-                }
-            })
-            .catch(err => console.error(err));
+            localStorage.setItem("bookmarkedEventIds", JSON.stringify([...bookmarkedIds]));
         }
 
         function hideAllBookmarks() {
