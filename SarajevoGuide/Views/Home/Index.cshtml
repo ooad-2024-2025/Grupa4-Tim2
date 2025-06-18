@@ -1,19 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
 
 
 @{
     ViewData["Title"] = "Home";
-}
-
-@if (TempData["Success"] != null)
-{
-    <div id="success-alert"
-         class="alert alert-success alert-dismissible fade show text-center fw-semibold"
-         role="alert"
-         style="max-width: 600px; margin-top: 120px; margin-left: auto; margin-right: auto;">
-       Successful
-    </div>
 }
 
 <div class="map-container">
@@ -456,8 +447,8 @@
         }
 
         function toggleBookmark(eventId) {
-            const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
-            if (bookmarkedIds.has(eventId)) {
+        const icon = document.querySelector(`.event-card[data-event-id="${eventId}"] .bookmark-icon`);
+                    if (bookmarkedIds.has(eventId)) {
                 bookmarkedIds.delete(eventId);
                 icon.classList.remove('active');
                 icon.textContent = '♡';

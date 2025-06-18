@@ -1,17 +1,94 @@
 ﻿@{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "My Bookmarks";
 }
-
 
 <h2 class="text-center mb-4">My Bookmarked Events</h2>
 
-<div id="bookmarkList">Loading bookmarks...</div>
+<div id="bookmarkList" class="d-flex flex-wrap gap-4 justify-content-center">Loading bookmarks...</div>
+
+<style>
+    .bookmark-card {
+        width: 280px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        position: relative;
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .bookmark-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .bookmark-info {
+        padding: 16px 14px;
+        flex-grow: 1;
+    }
+
+    .bookmark-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #222;
+    }
+
+    .bookmark-description {
+        font-size: 14px;
+        color: #444;
+        line-height: 1.5;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        border: none;
+        background: transparent;
+        font-size: 20px;
+        color: #888;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+        .delete-btn:hover {
+            color: #d33;
+        }
+</style>
+
 
 @section Scripts {
     <script>
+        async function getRealImage(keyword) {
+            try {
+                const response = await fetch('https://google.serper.dev/images', {
+                    method: 'POST',
+                    headers: {
+                        'X-API-KEY': '4388332a4488fe60492b9534fcaf51c371e0b895',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ q: keyword })
+                });
+
+                if (!response.ok) return null;
+
+                const data = await response.json();
+                return data.images?.[0]?.imageUrl || null;
+            } catch (err) {
+                console.error("Image fetch failed:", err);
+                return null;
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", async () => {
             let ids = JSON.parse(localStorage.getItem("bookmarkedEventIds") || "[]");
-
             const container = document.getElementById("bookmarkList");
 
             if (ids.length === 0) {
@@ -24,13 +101,15 @@
 
             container.innerHTML = "";
 
-            events.forEach(e => {
+            for (const e of events) {
                 const card = document.createElement("div");
                 card.className = "bookmark-card";
                 card.dataset.eventId = e.id;
 
+                const imageUrl = await getRealImage(e.name) || `https://picsum.photos/seed/${e.id}/280/180`;
+
                 card.innerHTML = `
-                    <img src="https://picsum.photos/seed/${e.id}/100/100" class="bookmark-image" alt="Image">
+                    <img src="${imageUrl}" class="bookmark-image" alt="Image of ${e.name}">
                     <div class="bookmark-info">
                         <div class="bookmark-title">${e.name}</div>
                         <div class="bookmark-description">${e.description || ""}</div>
@@ -39,7 +118,7 @@
                 `;
 
                 container.appendChild(card);
-            });
+            }
         });
 
         function removeBookmark(id) {
