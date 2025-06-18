@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using SarajevoGuide.Data;
 using SarajevoGuide.Models;
 using System.Security.Claims;
+using System.Net.Mail;
+using System.Net;
 
 namespace SarajevoGuide.Controllers
 {
@@ -46,35 +48,65 @@ namespace SarajevoGuide.Controllers
             return View(kupovina);
         }
 
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Create([FromForm] int brojUlaznica, [FromForm] int eventId)
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            if (userEmail == null)
+                return RedirectToAction("Index", "RegistrovaniKorisniks");
 
+            var korisnik = _context.RegistrovaniKorisnik
+                .FirstOrDefault(k => k.email == userEmail);
 
-[Authorize]
-    [HttpPost]
-    public IActionResult Create(
-    [FromForm] int brojUlaznica,
-    [FromForm] int eventId
-)
-    {
-        var userEmail = User.FindFirstValue(ClaimTypes.Email);
-        if (userEmail == null)
-            return RedirectToAction("Index", "RegistrovaniKorisniks");
+            if (korisnik == null)
+                return BadRequest("No RegistrovaniKorisnik found with your email.");
 
-        var korisnik = _context.RegistrovaniKorisnik
-            .FirstOrDefault(k => k.email == userEmail);
+            var ev = await _context.Event.FindAsync(eventId);
+            if (ev == null)
+                return BadRequest("Event not found.");
 
-        if (korisnik == null)
-            return BadRequest("No RegistrovaniKorisnik found with your email.");
+            var kupovina = new Kupovina(0, DateTime.Now, brojUlaznica, korisnik.id, eventId);
+            _context.Kupovina.Add(kupovina);
+            await _context.SaveChangesAsync();
 
-        var kupovina = new Kupovina(0, DateTime.Now, brojUlaznica, korisnik.id, eventId);
+            var ukupnaCijena = brojUlaznica * ev.Price;
+            var body = $@"
+        <h2>Potvrda kupovine</h2>
+        <p>Hvala na kupovini {brojUlaznica} ulaznica za <strong>{ev.Name}</strong>.</p>
+        <p>Ukupna cijena: <strong>{ukupnaCijena} KM</strong></p>
+        <p>Datum: {DateTime.Now:dd.MM.yyyy HH:mm}</p>";
 
-        _context.Kupovina.Add(kupovina);
-        _context.SaveChanges();
+            try
+            {
+                using var client = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    Credentials = new NetworkCredential("hhodzic550@gmail.com", "zzynbzamljuspzyx"),
+                    EnableSsl = true
+                };
 
-            TempData["Success"] = "Successfullllll";
+                var message = new MailMessage("hhodzic550@gmail.com", userEmail)
+                {
+                    Subject = "Potvrda kupovine",
+                    Body = body,
+                    IsBodyHtml = true
+                };
+
+                await client.SendMailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Kupovina uspješna, ali email nije poslan.";
+                Console.WriteLine("Greška prilikom slanja emaila:");
+                Console.WriteLine("Message: " + ex.Message);
+                Console.WriteLine("InnerException: " + ex.InnerException?.Message);
+                Console.WriteLine("Full error: " + ex.ToString());
+            }
+
+            TempData["Success"] = "Kupovina uspješna. Potvrda poslana na email.";
             return RedirectToAction("Index", "Home");
-
-
         }
+
 
 
 
